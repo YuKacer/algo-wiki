@@ -41,9 +41,18 @@ const sample2Graph: Graph = {
   ],
 };
 
+const sample3Graph: Graph = {
+  n: 7, directed: false,
+  edges: [
+    { from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 3 },
+    { from: 4, to: 5 },
+  ],
+};
+
 const samples = [
   { label: 'パス (5頂点)', graph: sample1Graph, startNode: 0 },
   { label: 'ひし形', graph: sample2Graph, startNode: 0 },
+  { label: '非連結グラフ', graph: sample3Graph, startNode: 0 },
 ];
 
 export function BfsPage() {
@@ -52,13 +61,14 @@ export function BfsPage() {
     <Layout meta={meta}>
       <h1 style={{ fontSize: '1.8rem', marginBottom: '0.25rem', color: '#1a1a2e' }}>{meta.title}</h1>
       <p style={{ color: '#6c757d', marginBottom: '1.5rem' }}>
-        始点から近い頂点から順に探索する。<strong>辺の重みが同じ</strong>グラフで最短距離を O(V+E) で求める。
+        始点から近い頂点から順に探索する。<strong>重みなし（または全辺同一コスト）</strong>なら
+        最短ステップ数を O(V+E) で求められる。
       </p>
 
       <Section title="使える条件 / 使えない条件">
         <CondTable rows={[
-          { cond: '辺の重みが全て 1（または重みなし）', ok: true },
-          { cond: '辺の重みが 0 か 1 のみ', ok: null, note: '0-1 BFS（未作成）が定数倍速い' },
+          { cond: '重みなし（または全辺同一コスト c）', ok: true, note: 'まず辺数最短を求める。重み最短は c 倍で復元できる' },
+          { cond: '辺の重みが 0 か 1 のみ', ok: false, note: '通常 BFS は不可。0-1 BFS（未作成）が必要' },
           { cond: '辺に異なる重みがある', ok: false, note: '→ Dijkstra' },
           { cond: '負辺がある', ok: false, note: '→ Bellman-Ford（未作成）' },
         ]} />
@@ -86,6 +96,13 @@ export function BfsPage() {
 
       <Section title="計算量">
         <p style={pStyle}>時間: O(V + E)、空間: O(V)。各頂点・辺を最大1回ずつ処理。</p>
+      </Section>
+
+      <Section title="よくある拡張（多始点 BFS）">
+        <p style={pStyle}>
+          複数の始点から最短距離を取りたいときは、各始点の dist を 0 にして
+          最初から同時にキューへ入れる。BFS はそのままで、最初に到達した距離が最短になる。
+        </p>
       </Section>
 
       <Section title="メタ情報">
