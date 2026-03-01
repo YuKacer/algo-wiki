@@ -19,6 +19,7 @@ export function BubbleSortPage() {
   const [inputArray, setInputArray] = useState<number[]>(DEFAULT_INPUT);
   const [inputError, setInputError] = useState('');
   const [frames, setFrames] = useState(() => bubbleSortFrames(DEFAULT_INPUT));
+  const [playerKey, setPlayerKey] = useState(0);
   const [activeCodeLine, setActiveCodeLine] = useState<number | undefined>(undefined);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +39,7 @@ export function BubbleSortPage() {
     setInputError('');
     setInputArray(parsed);
     setFrames(bubbleSortFrames(parsed));
+    setPlayerKey((k) => k + 1);
   };
 
   return (
@@ -100,7 +102,7 @@ export function BubbleSortPage() {
         {/* 右：可視化 */}
         <div style={pageStyles.vizPane}>
           <h2 style={pageStyles.paneTitle}>可視化</h2>
-          <Player frames={frames}>
+          <Player key={playerKey} frames={frames}>
             {(frame) => {
               // 描画のたびにactiveCodeLineを同期（副作用はuseEffectが必要だがここは軽量化のため直接）
               if (frame.codeLine !== activeCodeLine) {

@@ -19,7 +19,9 @@ export function Player({ frames, children }: PlayerProps) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const totalFrames = frames.length;
-  const currentFrame = frames[currentIndex] ?? null;
+  const maxIndex = Math.max(totalFrames - 1, 0);
+  const effectiveIndex = Math.min(currentIndex, maxIndex);
+  const currentFrame = frames[effectiveIndex] ?? null;
 
   const stopInterval = useCallback(() => {
     if (intervalRef.current !== null) {
@@ -32,11 +34,12 @@ export function Player({ frames, children }: PlayerProps) {
     stopInterval();
     intervalRef.current = setInterval(() => {
       setCurrentIndex((prev) => {
-        if (prev >= totalFrames - 1) {
+        const clampedPrev = Math.min(prev, Math.max(totalFrames - 1, 0));
+        if (clampedPrev >= totalFrames - 1) {
           setIsPlaying(false);
-          return prev;
+          return clampedPrev;
         }
-        return prev + 1;
+        return clampedPrev + 1;
       });
     }, BASE_INTERVAL_MS / speed);
   }, [speed, totalFrames, stopInterval]);
@@ -50,14 +53,8 @@ export function Player({ frames, children }: PlayerProps) {
     return stopInterval;
   }, [isPlaying, startInterval, stopInterval]);
 
-  // フレームがリセットされたら先頭に戻す
-  useEffect(() => {
-    setCurrentIndex(0);
-    setIsPlaying(false);
-  }, [frames]);
-
   const handlePlayPause = () => {
-    if (currentIndex >= totalFrames - 1 && !isPlaying) {
+    if (effectiveIndex >= totalFrames - 1 && !isPlaying) {
       setCurrentIndex(0);
       setIsPlaying(true);
     } else {
@@ -67,12 +64,12 @@ export function Player({ frames, children }: PlayerProps) {
 
   const handlePrev = () => {
     setIsPlaying(false);
-    setCurrentIndex((p) => Math.max(0, p - 1));
+    setCurrentIndex((p) => Math.max(0, Math.min(p, maxIndex) - 1));
   };
 
   const handleNext = () => {
     setIsPlaying(false);
-    setCurrentIndex((p) => Math.min(totalFrames - 1, p + 1));
+    setCurrentIndex((p) => Math.min(maxIndex, Math.min(p, maxIndex) + 1));
   };
 
   const handleSlider = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,24 +103,24 @@ export function Player({ frames, children }: PlayerProps) {
           type="range"
           min={0}
           max={totalFrames - 1}
-          value={currentIndex}
+          value={effectiveIndex}
           onChange={handleSlider}
           style={styles.slider}
         />
         <span style={styles.frameCounter}>
-          {currentIndex + 1} / {totalFrames}
+          {effectiveIndex + 1} / {totalFrames}
         </span>
       </div>
 
       {/* コントロールボタン */}
       <div style={styles.controls}>
-        <button onClick={handlePrev} disabled={currentIndex === 0} style={styles.btn} title="1ステップ戻る">
+        <button onClick={handlePrev} disabled={effectiveIndex === 0} style={styles.btn} title="1ステップ戻る">
           ◀◀
         </button>
         <button onClick={handlePlayPause} style={{ ...styles.btn, ...styles.btnPrimary }} title={isPlaying ? '停止' : '再生'}>
           {isPlaying ? '⏸ 停止' : '▶ 再生'}
         </button>
-        <button onClick={handleNext} disabled={currentIndex === totalFrames - 1} style={styles.btn} title="1ステップ進む">
+        <button onClick={handleNext} disabled={effectiveIndex === totalFrames - 1} style={styles.btn} title="1ステップ進む">
           ▶▶
         </button>
 

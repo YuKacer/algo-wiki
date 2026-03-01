@@ -15,13 +15,14 @@ export function Viz({ algoId, input }: VizProps) {
     if (!meta) return [];
     return meta.generateFrames(input);
   }, [meta, input]);
+  const playerKey = useMemo(() => `${algoId}:${input.join(',')}`, [algoId, input]);
 
   if (!meta) {
     return <p style={{ color: 'red' }}>アルゴリズム "{algoId}" が見つかりません</p>;
   }
 
   return (
-    <Player frames={frames}>
+    <Player key={playerKey} frames={frames}>
       {(frame) => <ArrayBars frame={frame} />}
     </Player>
   );

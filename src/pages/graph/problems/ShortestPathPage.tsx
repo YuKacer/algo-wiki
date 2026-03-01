@@ -16,6 +16,33 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 type WAnswer = boolean | null;
 
+function Ask({ q, value, onChange }: { q: string; value: WAnswer; onChange: (v: boolean) => void }) {
+  return (
+    <div style={{ marginBottom: '0.75rem' }}>
+      <div style={{ fontSize: '0.9rem', marginBottom: '0.35rem' }}>{q}</div>
+      <div style={{ display: 'flex', gap: '0.4rem' }}>
+        {(['YES', 'NO'] as const).map((label) => {
+          const v = label === 'YES';
+          return (
+            <button
+              key={label}
+              onClick={() => onChange(v)}
+              style={{
+                padding: '0.3rem 0.9rem', border: '1px solid #ced4da', borderRadius: '4px',
+                background: value === v ? '#4f8ef7' : '#fff',
+                color: value === v ? '#fff' : '#212529',
+                cursor: 'pointer', fontSize: '0.85rem', fontWeight: value === v ? 'bold' : 'normal',
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function AlgoWizard() {
   const [hasWeight, setHasWeight] = useState<WAnswer>(null);
   const [is01, setIs01] = useState<WAnswer>(null);
@@ -30,33 +57,6 @@ function AlgoWizard() {
   else if (hasWeight === true && is01 === false && hasNeg === false && allPairs === false) result = { algo: 'Dijkstra', note: '非負重み・単一始点。O((V+E)logV)', color: '#4f8ef7' };
   else if (hasWeight === true && is01 === false && hasNeg === false && allPairs === true) result = { algo: 'Warshall-Floyd（未作成）または Dijkstra × V 回', note: '全点対。V が小さければ WF: O(V³)', color: '#9c59d1' };
   else if (hasWeight === true && is01 === false && hasNeg === true) result = { algo: 'Bellman-Ford（未作成）', note: '負辺あり。負閉路検出も可。O(VE)', color: '#dc3545' };
-
-  function Ask({ q, value, onChange }: { q: string; value: WAnswer; onChange: (v: boolean) => void }) {
-    return (
-      <div style={{ marginBottom: '0.75rem' }}>
-        <div style={{ fontSize: '0.9rem', marginBottom: '0.35rem' }}>{q}</div>
-        <div style={{ display: 'flex', gap: '0.4rem' }}>
-          {(['YES', 'NO'] as const).map((label) => {
-            const v = label === 'YES';
-            return (
-              <button
-                key={label}
-                onClick={() => onChange(v)}
-                style={{
-                  padding: '0.3rem 0.9rem', border: '1px solid #ced4da', borderRadius: '4px',
-                  background: value === v ? '#4f8ef7' : '#fff',
-                  color: value === v ? '#fff' : '#212529',
-                  cursor: 'pointer', fontSize: '0.85rem', fontWeight: value === v ? 'bold' : 'normal',
-                }}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ border: '1px solid #dee2e6', borderRadius: '8px', padding: '1rem', background: '#fff' }}>

@@ -16,7 +16,7 @@ export function dijkstraSteps(graph: Graph, start: number): StepState[] {
   const parent: (number | null)[] = Array(n).fill(null);
   const visited = Array<boolean>(n).fill(false);
   // pq: array sorted as min-heap simulation [dist, node]
-  let pq: [number, number][] = [];
+  const pq: [number, number][] = [];
 
   dist[start] = 0;
   pq.push([0, start]);

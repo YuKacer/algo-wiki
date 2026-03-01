@@ -42,3 +42,7 @@ npm run preview   # Preview production build
 2. Register it in `src/algorithms/registry.ts`
 3. Create `src/pages/<Name>Page.tsx` using `<Player>` + `<ArrayBars>`
 4. Add a `<Route>` in `src/router.tsx` and a card on the home page
+
+## License
+
+MIT
