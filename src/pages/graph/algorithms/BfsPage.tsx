@@ -29,11 +29,21 @@ vector<int> bfs(const vector<vector<int>>& graph, int s, int V) {
 `.trim();
 
 const sample1Graph: Graph = {
+  n: 7, directed: false,
+  edges: [
+    { from: 0, to: 1 }, { from: 0, to: 2 },
+    { from: 1, to: 3 }, { from: 1, to: 4 },
+    { from: 2, to: 5 }, { from: 3, to: 6 },
+    { from: 4, to: 5 },
+  ],
+};
+
+const sample2Graph: Graph = {
   n: 5, directed: false,
   edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 4 }],
 };
 
-const sample2Graph: Graph = {
+const sample3Graph: Graph = {
   n: 6, directed: false,
   edges: [
     { from: 0, to: 1 }, { from: 0, to: 2 }, { from: 1, to: 3 },
@@ -41,7 +51,7 @@ const sample2Graph: Graph = {
   ],
 };
 
-const sample3Graph: Graph = {
+const sample4Graph: Graph = {
   n: 7, directed: false,
   edges: [
     { from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 3 },
@@ -50,9 +60,10 @@ const sample3Graph: Graph = {
 };
 
 const samples = [
-  { label: 'パス (5頂点)', graph: sample1Graph, startNode: 0 },
-  { label: 'ひし形', graph: sample2Graph, startNode: 0 },
-  { label: '非連結グラフ', graph: sample3Graph, startNode: 0 },
+  { label: '分岐 + 合流', graph: sample1Graph, startNode: 0 },
+  { label: 'パス (5頂点)', graph: sample2Graph, startNode: 0 },
+  { label: 'ひし形', graph: sample3Graph, startNode: 0 },
+  { label: '非連結グラフ', graph: sample4Graph, startNode: 0 },
 ];
 
 export function BfsPage() {
