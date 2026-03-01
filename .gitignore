@@ -29,3 +29,6 @@ dist-ssr
 # Internal / AI assistant files
 CLAUDE.md
 REQ_AlgoWiki_v1.md
+
+# Local docs
+docs/
