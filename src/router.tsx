@@ -5,6 +5,7 @@ import { BubbleSortPage } from './pages/BubbleSortPage';
 import { AlgorithmsPage } from './pages/AlgorithmsPage';
 import { SecurityPage } from './pages/security/SecurityPage';
 import { TransportSecurityPage } from './pages/security/TransportSecurityPage';
+import { TransportMethodPage } from './pages/security/TransportMethodPage';
 import { PublicKeyCryptoPage } from './pages/security/PublicKeyCryptoPage';
 import { DigitalSignaturePage } from './pages/security/DigitalSignaturePage';
 import { CertificateAuthorityPage } from './pages/security/CertificateAuthorityPage';
@@ -55,6 +56,7 @@ export function AppRouter() {
 
           <Route path="/security" element={<SecurityPage />} />
           <Route path="/security/transport-security" element={<TransportSecurityPage />} />
+          <Route path="/security/transport-security/:methodId" element={<TransportMethodPage />} />
           <Route path="/security/public-key-crypto" element={<PublicKeyCryptoPage />} />
           <Route path="/security/digital-signature" element={<DigitalSignaturePage />} />
           <Route path="/security/signature" element={<DigitalSignaturePage />} />
