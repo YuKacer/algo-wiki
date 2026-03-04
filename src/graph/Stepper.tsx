@@ -108,9 +108,11 @@ function StatePanel({ step, algoId }: { step: StepState; algoId: string }) {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', gap: '0.5rem' }}>
+    <div style={{ display: 'flex', gap: '0.5rem', minWidth: 0 }}>
       <span style={{ color: '#6c757d', minWidth: '80px' }}>{label}:</span>
-      <span style={{ fontFamily: 'monospace', color: '#212529' }}>{children}</span>
+      <span style={{ fontFamily: 'monospace', color: '#212529', minWidth: 0, flex: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+        {children}
+      </span>
     </div>
   );
 }

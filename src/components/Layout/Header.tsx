@@ -1,10 +1,22 @@
 import { Link, useLocation } from 'react-router-dom';
 
-export function Header() {
+interface HeaderProps {
+  showSidebarToggle?: boolean;
+  onSidebarToggle?: () => void;
+  sidebarExpanded?: boolean;
+  sidebarControlId?: string;
+}
+
+export function Header({
+  showSidebarToggle = false,
+  onSidebarToggle,
+  sidebarExpanded,
+  sidebarControlId,
+}: HeaderProps) {
   const { pathname } = useLocation();
 
   const navItems = [
-    { label: 'Algorithms', to: '/graph/algorithms' },
+    { label: 'Algorithms', to: '/algorithms' },
     { label: 'Problems', to: '/graph/problems' },
     { label: 'Bubble Sort', to: '/algorithms/bubble-sort' },
   ];
@@ -30,7 +42,7 @@ export function Header() {
       >
         🧮 AlgoWiki
       </Link>
-      <nav style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+      <nav style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap', flex: 1 }}>
         {navItems.map((item) => (
           <Link
             key={item.to}
@@ -48,6 +60,27 @@ export function Header() {
           </Link>
         ))}
       </nav>
+      {showSidebarToggle && (
+        <button
+          type="button"
+          onClick={onSidebarToggle}
+          aria-label="サイドバーを開閉"
+          aria-expanded={sidebarExpanded}
+          aria-controls={sidebarControlId}
+          style={{
+            border: '1px solid #45506e',
+            background: 'rgba(255,255,255,0.06)',
+            color: '#fff',
+            padding: '0.22rem 0.45rem',
+            borderRadius: '4px',
+            fontSize: '0.9rem',
+            lineHeight: 1.2,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {sidebarExpanded ? '◀' : '☰'}
+        </button>
+      )}
     </header>
   );
 }

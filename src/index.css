@@ -40,9 +40,45 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* モバイル対応：2カラムを縦並びに */
-@media (max-width: 640px) {
-  .main-layout {
+.app-shell {
+  position: relative;
+}
+
+.app-main {
+  margin: 0 auto;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 52px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.34);
+  z-index: 250;
+}
+
+.gp-grid {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    display: block !important;
+  }
+
+  .app-main {
+    max-width: 100% !important;
+    margin: 0;
+  }
+
+  .gp-header {
+    gap: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .gp-grid {
     grid-template-columns: 1fr !important;
   }
 }

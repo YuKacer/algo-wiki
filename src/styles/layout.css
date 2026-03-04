@@ -1,0 +1,371 @@
+/* ─────────────────────────────────────────────────────
+   AlgoWiki Shell Layout
+   クラスプレフィックス: aw-  (衝突回避)
+───────────────────────────────────────────────────── */
+
+/* ── CSS Variables ── */
+:root {
+  --sidebar-w:  280px;
+  --sidebar-wc: 72px;
+  --topbar-h:   56px;
+  --sidebar-bg: #1a1a2e;
+  --sidebar-border: #2d2d50;
+  --topbar-bg: #ffffff;
+  --topbar-border: #dee2e6;
+  --aw-transition: 0.25s ease;
+}
+
+/* ── Root container ── */
+.aw-layout {
+  min-height: 100vh;
+}
+
+/* ─────────────────────────────────────────────────────
+   Sidebar
+───────────────────────────────────────────────────── */
+.aw-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--sidebar-w);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  overflow: hidden;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transition: width var(--aw-transition);
+}
+
+.aw-layout.is-collapsed .aw-sidebar {
+  width: var(--sidebar-wc);
+}
+
+/* Brand / logo row */
+.aw-sidebar-brand {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.1rem;
+  border-bottom: 1px solid var(--sidebar-border);
+  flex-shrink: 0;
+  text-decoration: none;
+  color: #fff;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.aw-sidebar-brand:hover {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.aw-brand-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.aw-brand-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+}
+
+/* Nav area */
+.aw-sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem 0;
+}
+
+.aw-nav-section {
+  margin-bottom: 0.25rem;
+}
+
+.aw-nav-section-label {
+  padding: 0.55rem 1.1rem 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6c757d;
+  white-space: nowrap;
+  max-height: 2.5rem;
+  overflow: hidden;
+  transition: opacity var(--aw-transition),
+              max-height var(--aw-transition),
+              padding var(--aw-transition);
+}
+
+.aw-layout.is-collapsed .aw-nav-section-label {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.aw-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.48rem 1.1rem;
+  font-size: 0.875rem;
+  color: #adb5bd;
+  text-decoration: none;
+  white-space: nowrap;
+  border-left: 3px solid transparent;
+  transition: background 0.15s, color 0.15s, padding var(--aw-transition);
+}
+
+.aw-nav-link:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  text-decoration: none;
+}
+
+.aw-nav-link.active {
+  color: #fff;
+  background: rgba(79, 142, 247, 0.15);
+  border-left-color: #4f8ef7;
+}
+
+/* Collapsed: center icon, collapse label to zero width */
+.aw-layout.is-collapsed .aw-nav-link {
+  padding: 0.48rem 0;
+  justify-content: center;
+  border-left-color: transparent !important;
+  gap: 0;
+}
+
+.aw-layout.is-collapsed .aw-nav-link.active {
+  background: rgba(79, 142, 247, 0.15);
+}
+
+.aw-nav-icon {
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Disabled nav item (coming soon) */
+.aw-nav-link--disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.aw-nav-label {
+  overflow: hidden;
+  max-width: 200px;
+  transition: max-width var(--aw-transition), opacity var(--aw-transition);
+}
+
+.aw-layout.is-collapsed .aw-nav-label {
+  max-width: 0;
+  opacity: 0;
+}
+
+/* ─────────────────────────────────────────────────────
+   Main area (right of sidebar)
+───────────────────────────────────────────────────── */
+.aw-main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left var(--aw-transition);
+}
+
+.aw-layout.is-collapsed .aw-main {
+  margin-left: var(--sidebar-wc);
+}
+
+/* ─────────────────────────────────────────────────────
+   Topbar (sticky, inside .aw-main)
+───────────────────────────────────────────────────── */
+.aw-topbar {
+  position: sticky;
+  top: 0;
+  height: var(--topbar-h);
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--topbar-border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.25rem;
+  z-index: 50;
+  flex-shrink: 0;
+}
+
+/* Toggle button — lives in header left */
+.aw-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #dee2e6;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #495057;
+  font-size: 1.05rem;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.aw-toggle-btn:hover {
+  background: #f8f9fa;
+}
+
+/* Topbar toggle: desktop hidden, mobile visible */
+.aw-topbar-toggle { display: none; }
+@media (max-width: 768px) {
+  .aw-topbar-toggle { display: flex; }
+}
+
+/* Topbar brand */
+.aw-topbar-brand {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1a1a2e;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.aw-topbar-brand:hover {
+  color: #4f8ef7;
+  text-decoration: none;
+}
+
+/* Sidebar header row (height matches topbar) */
+.aw-sidebar-header {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 0.75rem;
+  border-bottom: 1px solid var(--sidebar-border);
+  flex-shrink: 0;
+}
+
+.aw-layout.is-collapsed .aw-sidebar-header {
+  justify-content: center;
+}
+
+/* Sidebar toggle button (dark background variant) */
+.aw-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--sidebar-border);
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #adb5bd;
+  font-size: 1.05rem;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+
+.aw-sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.aw-topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.aw-topbar-link {
+  font-size: 0.875rem;
+  color: #6c757d;
+  text-decoration: none;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.aw-topbar-link:hover {
+  background: #f8f9fa;
+  color: #212529;
+  text-decoration: none;
+}
+
+.aw-topbar-link.active {
+  color: #4f8ef7;
+  background: #e8f0fe;
+}
+
+/* ─────────────────────────────────────────────────────
+   Content (scrollable page area)
+───────────────────────────────────────────────────── */
+.aw-content {
+  flex: 1;
+  background: #f5f7fa;
+  min-width: 0;
+}
+
+/* Page wrapper used by Layout.tsx */
+.aw-page-body {
+  max-width: 960px;
+  padding: 1.5rem 2rem;
+  width: 100%;
+}
+
+/* ─────────────────────────────────────────────────────
+   Mobile overlay (backdrop for drawer)
+───────────────────────────────────────────────────── */
+.aw-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 90;
+  border: none;
+  cursor: default;
+  padding: 0;
+}
+
+/* ─────────────────────────────────────────────────────
+   Mobile (≤768px): sidebar becomes a drawer
+───────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .aw-sidebar {
+    /* Full width drawer, slides in from left */
+    width: var(--sidebar-w) !important;
+    transform: translateX(-100%);
+    transition: transform var(--aw-transition);
+    z-index: 300;
+  }
+
+  .aw-layout.mobile-open .aw-sidebar {
+    transform: translateX(0);
+  }
+
+  .aw-layout.mobile-open .aw-overlay {
+    display: block;
+  }
+
+  .aw-main {
+    margin-left: 0 !important;
+    transition: none;
+  }
+
+  .aw-page-body {
+    padding: 1rem 0.9rem;
+  }
+}

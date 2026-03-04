@@ -68,8 +68,8 @@ export function GraphPlayground({ algoId, defaultGraph, defaultStart = 0, sample
   const showWeight = algoId === 'dijkstra';
 
   return (
-    <div style={{ border: '1px solid #dee2e6', borderRadius: '8px', overflow: 'hidden', background: '#f8f9fa' }}>
-      <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #dee2e6', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="gp-shell" style={{ border: '1px solid #dee2e6', borderRadius: '8px', overflow: 'hidden', background: '#f8f9fa' }}>
+      <div className="gp-header" style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #dee2e6', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <strong style={{ fontSize: '0.95rem' }}>🎮 可視化プレイグラウンド</strong>
         <button
           onClick={run}
@@ -90,7 +90,7 @@ export function GraphPlayground({ algoId, defaultGraph, defaultStart = 0, sample
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', padding: '0 0.75rem 0.75rem' }}>
+      <div className="gp-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', padding: '0 0.75rem 0.75rem' }}>
         <div>
           <GraphView graph={graph} step={steps[currentIndex]} />
         </div>

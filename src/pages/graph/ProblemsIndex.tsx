@@ -1,14 +1,11 @@
 import { Link } from 'react-router-dom';
 import { getPagesByKind } from '../../content/pages';
-import { Header } from '../../components/Layout/Header';
 import { Chip } from '../../components/Chip';
 
 export function ProblemsIndex() {
   const pages = getPagesByKind('problem');
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f7fa' }}>
-      <Header />
-      <main style={{ maxWidth: '860px', margin: '0 auto', padding: '2rem 1rem' }}>
+    <main style={{ maxWidth: '860px', margin: '0 auto', padding: '2rem 1rem' }}>
         <h1 style={{ fontSize: '1.8rem', marginBottom: '0.25rem', color: '#1a1a2e' }}>
           Graph Problem Patterns
         </h1>
@@ -40,7 +37,6 @@ export function ProblemsIndex() {
             </Link>
           ))}
         </div>
-      </main>
-    </div>
+    </main>
   );
 }
