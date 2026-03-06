@@ -1,66 +1,19 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { TlsHandshakePlayer } from '../../components/TlsHandshakePlayer';
 import { type TransportMethodId, getTransportMethodById } from '../../content/securityTransportModel';
 
 const ORDER: TransportMethodId[] = ['tls', 'ipsec', 'ssh', 'vpn', 'dns-protection'];
 
-interface TlsFlowRow {
-  step: string;
-  client: ReactNode;
-  server: ReactNode;
+interface TlsDecisionCard {
+  title: string;
+  items: string[];
 }
 
-const INLINE_LINK_STYLE: CSSProperties = {
-  color: '#185ccf',
-  textDecoration: 'none',
-  fontWeight: 700,
-  margin: '0 0.18rem',
-};
-
-const TLS_FLOW: TlsFlowRow[] = [
-  {
-    step: '1. ClientHello（提案）',
-    client: '対応バージョン候補・暗号スイート候補・SNI・（TLS1.3なら）鍵共有候補（key share）などを送る',
-    server: '受信して採用する方式を選定する',
-  },
-  {
-    step: '2. ServerHello（方式決定）',
-    client: '採用方式とサーバーの鍵共有情報（key share）を受け取り、共有秘密を導出してハンドシェイク暗号化の鍵を作り始める',
-    server: '採用バージョン・暗号スイートを返し、鍵共有情報（key share）を提示する',
-  },
-  {
-    step: '3. 証明書提示 + CertificateVerify',
-    client: (
-      <>
-        （以降は暗号化されたハンドシェイクとして）証明書チェーンと CertificateVerify を受け取る。証明書は SAN・期限・
-        <Link to="/security/certificate-authority" style={INLINE_LINK_STYLE}>CA</Link>
-        連鎖・署名を検証し、CertificateVerify はハンドシェイク内容に対する
-        <Link to="/security/digital-signature" style={INLINE_LINK_STYLE}>デジタル署名</Link>
-        として検証する
-      </>
-    ),
-    server: '証明書チェーンと CertificateVerify を送る（サーバー本人性の証明）',
-  },
-  {
-    step: '4. 証明書検証（真正性確認）',
-    client: 'ホスト名（SAN）・期限・CA連鎖と、CertificateVerify の署名を検証する（OKなら Client Finished を送る）',
-    server: 'Client Finished を受け取って初めて、検証が通りハンドシェイクが成立したと分かる',
-  },
-  {
-    step: '5. 鍵導出 + Server Finished',
-    client: (
-      <>
-        <Link to="/security/public-key-crypto" style={INLINE_LINK_STYLE}>公開鍵の仕組み</Link>
-        を使う鍵交換（実運用では主にECDHE）で得た共有秘密から、アプリ通信の鍵を導出する。Server Finished を検証する
-      </>
-    ),
-    server: '共有秘密からアプリ通信の鍵を導出し、（証明書提示/CertificateVerify の後に）Server Finished を先に送る',
-  },
-  {
-    step: '6. Client Finished -> アプリ通信開始',
-    client: 'Client Finished を送信し、以後のアプリデータ（HTTPなど）を共通鍵暗号で送る',
-    server: 'Client Finished を受信してハンドシェイク完了と判断し、応答も共通鍵暗号で返す',
-  },
+const TLS_SUMMARY = [
+  'TLS は主に Web/API などのアプリ通信を保護する標準方式です。',
+  '守る中心は、通信の機密性・完全性・サーバー真正性です。',
+  '端末侵害や TLS 終端以降の区間は、自動では守られません。',
 ];
 
 const TLS_DIFFS = [
@@ -71,40 +24,33 @@ const TLS_DIFFS = [
   },
   {
     point: '鍵交換/暗号の整理',
-    v12: '暗号スイートに要素が混在しやすい',
-    v13: '鍵交換と暗号設定が整理され、誤設定リスクを下げやすい',
+    v12: '暗号スイートに鍵交換や認証方式の違いが入り込みやすい',
+    v13: '古い方式を整理し、設定ミスの余地を減らしやすい',
   },
   {
-    point: 'Early Data',
+    point: '0-RTT / Early Data',
     v12: 'なし',
-    v13: '0-RTT が可能（リプレイ耐性の設計は別途必要）',
+    v13: '再開時に 0-RTT が可能（非冪等操作ではリプレイ耐性に注意）',
   },
 ];
 
-const TLS_FAILURES = [
+const TLS_DECISION_CARDS: TlsDecisionCard[] = [
   {
-    symptom: '証明書エラーで接続できない',
-    cause: '期限切れ・ホスト名不一致・中間証明書不足',
-    fix: '証明書更新、SAN確認、フルチェーン配布を実施する',
+    title: 'TLS が向く場面',
+    items: [
+      '公開 Web サイトや API をブラウザやアプリから安全に使わせたい',
+      'サービス間通信で、接続先サーバーの本人性と経路上の保護を確保したい',
+      'HTTPS や gRPC など、標準的なアプリプロトコルの保護を行いたい',
+    ],
   },
   {
-    symptom: '一部端末だけ通信失敗',
-    cause: '中間証明書不足や非推奨TLS設定',
-    fix: '中間証明書を揃え、互換ポリシーを定期見直しする',
+    title: 'TLS だけでは足りない場面',
+    items: [
+      '拠点全体や社内ネットワーク全体の経路を守りたいなら IPsec / VPN を検討する',
+      '管理者のログインや踏み台接続を守るなら SSH を使う',
+      '名前解決の改ざん対策は DNS 保護系の方式を別途組み合わせる',
+    ],
   },
-  {
-    symptom: '運用中に設定差異で事故',
-    cause: '環境ごとに TLS/証明書ポリシーが不統一',
-    fix: 'TLS1.3優先、弱い設定無効化、IaCで設定統制する',
-  },
-];
-
-const TLS_CHECKLIST = [
-  'TLS1.3を優先し、TLS1.2は必要最小限の互換用途に限定する',
-  '証明書期限の監視と自動更新を運用に組み込む',
-  '中間証明書を含むフルチェーンを常に配布する',
-  'ステージングで主要ブラウザ/主要クライアントの相互接続を確認する',
-  '失敗ログ（ハンドシェイク失敗・証明書エラー）を監視し、原因を継続改善する',
 ];
 
 function nextPrev(id: TransportMethodId) {
@@ -160,40 +106,42 @@ function TlsContent() {
   return (
     <>
       <section style={panelStyle}>
-        <h2 style={sectionTitleStyle}>TLSで何が守られるか</h2>
+        <h2 style={sectionTitleStyle}>3行要約</h2>
         <ul style={listStyle}>
-          <li><strong>機密性:</strong> 第三者に平文で読まれない</li>
-          <li><strong>完全性:</strong> 通信中に改ざんされにくい</li>
-          <li><strong>真正性:</strong> 接続先サーバーの正当性を検証できる</li>
+          {TLS_SUMMARY.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
         </ul>
       </section>
 
       <section style={panelStyle}>
-        <h2 style={sectionTitleStyle}>ハンドシェイクの流れ（TLS1.3）</h2>
-        <div style={tableWrapStyle}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>ステップ</th>
-                <th style={thStyle}>クライアント側</th>
-                <th style={thStyle}>サーバー側</th>
-              </tr>
-            </thead>
-            <tbody>
-              {TLS_FLOW.map((row) => (
-                <tr key={row.step}>
-                  <td style={tdStrongStyle}>{row.step}</td>
-                  <td style={tdStyle}>{row.client}</td>
-                  <td style={tdStyle}>{row.server}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <h2 style={sectionTitleStyle}>TLSで何が守られるか</h2>
+        <ul style={listStyle}>
+          <li><strong>機密性:</strong> 通信経路上の第三者に平文を読まれにくい</li>
+          <li><strong>完全性:</strong> 途中改ざんがあれば検知できる</li>
+          <li><strong>真正性:</strong> 証明書検証により、接続先サーバーの本人性を確認できる</li>
+        </ul>
+      </section>
+
+      <section style={panelStyle}>
+        <h2 style={sectionTitleStyle}>TLSが向く場面 / 向かない場面</h2>
+        <div style={decisionGridStyle}>
+          {TLS_DECISION_CARDS.map((card) => (
+            <div key={card.title} style={decisionCardStyle}>
+              <h3 style={miniTitleStyle}>{card.title}</h3>
+              <ul style={listStyle}>
+                {card.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-        <p style={noteStyle}>
-          注: TLS1.3ではバージョン互換の都合で <code>supported_versions</code> を使い、鍵交換は <code>key share</code> /{' '}
-          <code>supported_groups</code> で提示します。
-        </p>
+      </section>
+
+      <section style={panelStyle}>
+        <h2 style={sectionTitleStyle}>ハンドシェイクの流れ（TLS1.3）</h2>
+        <TlsHandshakePlayer />
       </section>
 
       <section style={panelStyle}>
@@ -221,43 +169,13 @@ function TlsContent() {
       </section>
 
       <section style={panelStyle}>
-        <h2 style={sectionTitleStyle}>よくある失敗パターン</h2>
-        <div style={tableWrapStyle}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>症状</th>
-                <th style={thStyle}>原因</th>
-                <th style={thStyle}>対策</th>
-              </tr>
-            </thead>
-            <tbody>
-              {TLS_FAILURES.map((row) => (
-                <tr key={row.symptom}>
-                  <td style={tdStrongStyle}>{row.symptom}</td>
-                  <td style={tdStyle}>{row.cause}</td>
-                  <td style={tdStyle}>{row.fix}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section style={panelStyle}>
         <h2 style={sectionTitleStyle}>TLSが守らないもの</h2>
         <ul style={listStyle}>
+          <li>TLS 終端の先にある内部通信や保存データは、自動では保護されない</li>
           <li>端末やサーバー自体が侵害されている場合の情報漏えいは防げない</li>
           <li>宛先IP・通信量などの外形情報は見える（技術により一部緩和可能）</li>
-        </ul>
-      </section>
-
-      <section style={panelStyle}>
-        <h2 style={sectionTitleStyle}>運用チェックリスト</h2>
-        <ul style={listStyle}>
-          {TLS_CHECKLIST.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
+          <li>正しい証明書を持つ相手が、アプリ上で不正な処理をすることまでは防げない</li>
+          <li>通常の HTTPS だけでは利用者本人確認までは行わず、クライアント認証は別設計になる</li>
         </ul>
       </section>
     </>
@@ -361,11 +279,24 @@ const tdStrongStyle: CSSProperties = {
   color: '#1f2a37',
 };
 
-const noteStyle: CSSProperties = {
-  margin: '0.5rem 0 0',
-  color: '#6b7280',
-  fontSize: '0.82rem',
-  lineHeight: 1.55,
+const decisionGridStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+  gap: '0.75rem',
+};
+
+const decisionCardStyle: CSSProperties = {
+  border: '1px solid #e3e8ef',
+  borderRadius: '10px',
+  padding: '0.85rem',
+  background: '#fbfcff',
+};
+
+const miniTitleStyle: CSSProperties = {
+  margin: 0,
+  marginBottom: '0.45rem',
+  fontSize: '0.98rem',
+  color: '#1f2a37',
 };
 
 const pagerStyle: CSSProperties = {

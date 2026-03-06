@@ -17,7 +17,7 @@ export const TRANSPORT_METHODS: TransportMethod[] = [
   {
     id: 'tls',
     title: 'TLS',
-    layer: 'アプリとトランスポートの間（TCP/QUIC）',
+    layer: '主にアプリ通信の保護（TCP上のTLS、QUICではTLS 1.3 を利用）',
     protects: 'Web/API などアプリ通信の機密性・完全性・真正性',
     usage: 'HTTPS、gRPC、メール転送など',
     strengths: 'ブラウザ標準、証明書基盤、導入しやすい',
