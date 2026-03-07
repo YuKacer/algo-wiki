@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { TlsHandshakePlayer } from '../../components/TlsHandshakePlayer';
+import { TlsStepBreadcrumbs } from '../../components/TlsStepBreadcrumbs';
 import { type TransportMethodId, getTransportMethodById } from '../../content/securityTransportModel';
 
 const ORDER: TransportMethodId[] = ['tls', 'ipsec', 'ssh', 'vpn', 'dns-protection'];
@@ -12,26 +13,8 @@ interface TlsDecisionCard {
 
 const TLS_SUMMARY = [
   'TLS は主に Web/API などのアプリ通信を保護する標準方式です。',
-  '守る中心は、通信の機密性・完全性・サーバー真正性です。',
+  '守る中心は、通信の機密性・完全性・サーバーの本人性です。',
   '端末侵害や TLS 終端以降の区間は、自動では守られません。',
-];
-
-const TLS_DIFFS = [
-  {
-    point: 'フルハンドシェイク',
-    v12: '通常 2-RTT',
-    v13: '通常 1-RTT',
-  },
-  {
-    point: '鍵交換/暗号の整理',
-    v12: '暗号スイートに鍵交換や認証方式の違いが入り込みやすい',
-    v13: '古い方式を整理し、設定ミスの余地を減らしやすい',
-  },
-  {
-    point: '0-RTT / Early Data',
-    v12: 'なし',
-    v13: '再開時に 0-RTT が可能（非冪等操作ではリプレイ耐性に注意）',
-  },
 ];
 
 const TLS_DECISION_CARDS: TlsDecisionCard[] = [
@@ -119,7 +102,7 @@ function TlsContent() {
         <ul style={listStyle}>
           <li><strong>機密性:</strong> 通信経路上の第三者に平文を読まれにくい</li>
           <li><strong>完全性:</strong> 途中改ざんがあれば検知できる</li>
-          <li><strong>真正性:</strong> 証明書検証により、接続先サーバーの本人性を確認できる</li>
+          <li><strong>本人性:</strong> 証明書検証により、接続先サーバーの本人性を確認できる</li>
         </ul>
       </section>
 
@@ -143,41 +126,6 @@ function TlsContent() {
         <h2 style={sectionTitleStyle}>ハンドシェイクの流れ（TLS1.3）</h2>
         <TlsHandshakePlayer />
       </section>
-
-      <section style={panelStyle}>
-        <h2 style={sectionTitleStyle}>TLS1.2 と TLS1.3 の違い（RTT観点）</h2>
-        <div style={tableWrapStyle}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>観点</th>
-                <th style={thStyle}>TLS1.2</th>
-                <th style={thStyle}>TLS1.3</th>
-              </tr>
-            </thead>
-            <tbody>
-              {TLS_DIFFS.map((row) => (
-                <tr key={row.point}>
-                  <td style={tdStrongStyle}>{row.point}</td>
-                  <td style={tdStyle}>{row.v12}</td>
-                  <td style={tdStyle}>{row.v13}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section style={panelStyle}>
-        <h2 style={sectionTitleStyle}>TLSが守らないもの</h2>
-        <ul style={listStyle}>
-          <li>TLS 終端の先にある内部通信や保存データは、自動では保護されない</li>
-          <li>端末やサーバー自体が侵害されている場合の情報漏えいは防げない</li>
-          <li>宛先IP・通信量などの外形情報は見える（技術により一部緩和可能）</li>
-          <li>正しい証明書を持つ相手が、アプリ上で不正な処理をすることまでは防げない</li>
-          <li>通常の HTTPS だけでは利用者本人確認までは行わず、クライアント認証は別設計になる</li>
-        </ul>
-      </section>
     </>
   );
 }
@@ -188,17 +136,31 @@ export function TransportMethodPage() {
   if (!method) return <Navigate to="/security/transport-security" replace />;
 
   const nav = nextPrev(method.id);
-  const prevLabel = nav.prev ? `← 前の方式: ${getTransportMethodById(nav.prev)?.title ?? ''}` : '← 一覧に戻る';
-  const nextLabel = nav.next ? `次の方式: ${getTransportMethodById(nav.next)?.title ?? ''} →` : '一覧に戻る →';
   const isTls = method.id === 'tls';
+  const prevLabel = isTls
+    ? '← 一覧に戻る'
+    : nav.prev
+      ? `← 前の方式: ${getTransportMethodById(nav.prev)?.title ?? ''}`
+      : '← 一覧に戻る';
+  const prevTo = isTls ? '/security/transport-security' : methodLink(nav.prev);
+  const nextLabel = isTls
+    ? 'ClientHello へ →'
+    : nav.next
+      ? `次の方式: ${getTransportMethodById(nav.next)?.title ?? ''} →`
+      : '一覧に戻る →';
+  const nextTo = isTls ? '/security/transport-security/tls/client-hello' : methodLink(nav.next);
 
   return (
     <main style={{ maxWidth: '980px', margin: '0 auto', padding: '2rem 1rem 2.5rem' }}>
-      <div style={{ marginBottom: '0.85rem' }}>
-        <Link to="/security/transport-security" style={backLinkStyle}>
-          ← 通信保護の一覧に戻る
-        </Link>
-      </div>
+      {isTls ? (
+        <TlsStepBreadcrumbs />
+      ) : (
+        <div style={{ marginBottom: '0.85rem' }}>
+          <Link to="/security/transport-security" style={backLinkStyle}>
+            ← 通信保護の一覧に戻る
+          </Link>
+        </div>
+      )}
 
       <h1 style={{ margin: 0, fontSize: '1.88rem', color: '#1a1a2e' }}>{method.title}</h1>
       <p style={{ color: '#6c757d', marginTop: '0.45rem', marginBottom: '1rem', lineHeight: 1.75 }}>
@@ -216,8 +178,8 @@ export function TransportMethodPage() {
       {isTls ? <TlsContent /> : null}
 
       <section style={pagerStyle}>
-        <Link to={methodLink(nav.prev)} style={pagerLinkStyle}>{prevLabel}</Link>
-        <Link to={methodLink(nav.next)} style={pagerLinkStyle}>{nextLabel}</Link>
+        <Link to={prevTo} style={pagerLinkStyle}>{prevLabel}</Link>
+        <Link to={nextTo} style={pagerLinkStyle}>{nextLabel}</Link>
       </section>
     </main>
   );
@@ -243,40 +205,6 @@ const listStyle: CSSProperties = {
   paddingLeft: '1.2rem',
   color: '#343a40',
   lineHeight: 1.72,
-};
-
-const tableWrapStyle: CSSProperties = {
-  overflowX: 'auto',
-};
-
-const tableStyle: CSSProperties = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  minWidth: '680px',
-  background: '#fff',
-};
-
-const thStyle: CSSProperties = {
-  textAlign: 'left',
-  borderBottom: '1px solid #dee2e6',
-  padding: '0.5rem 0.55rem',
-  color: '#495057',
-  fontSize: '0.84rem',
-};
-
-const tdStyle: CSSProperties = {
-  borderBottom: '1px solid #f1f3f5',
-  padding: '0.5rem 0.55rem',
-  color: '#343a40',
-  lineHeight: 1.6,
-  verticalAlign: 'top',
-  fontSize: '0.9rem',
-};
-
-const tdStrongStyle: CSSProperties = {
-  ...tdStyle,
-  fontWeight: 700,
-  color: '#1f2a37',
 };
 
 const decisionGridStyle: CSSProperties = {

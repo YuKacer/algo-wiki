@@ -34,7 +34,7 @@ const DEFAULT_LABELS: StepPlayerLabels = {
   pause: '停止',
   next: '次へ',
   slider: 'ステップ選択',
-  done: '再生が終了しました。「再生」で先頭からもう一度確認できます。',
+  done: '',
 };
 
 export function StepPlayer({
@@ -138,7 +138,7 @@ export function StepPlayer({
 
       {renderStatus ? (
         renderStatus(ctx)
-      ) : isEnded ? (
+      ) : isEnded && mergedLabels.done ? (
         <p style={{ margin: 0, color: '#6c757d', fontSize: '0.9rem' }}>{mergedLabels.done}</p>
       ) : null}
     </div>

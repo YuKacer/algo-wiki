@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { Link } from 'react-router-dom';
 import { StepPlayer } from './StepPlayer';
 
 type Direction = 'client-to-server' | 'server-to-client';
@@ -14,6 +15,7 @@ interface TlsHandshakeStep {
   description: string;
   clientState: string;
   serverState: string;
+  detailPath?: string;
 }
 
 interface TlsTerm {
@@ -29,9 +31,10 @@ const STEPS: TlsHandshakeStep[] = [
     messageLabel: 'ClientHello',
     channelState: 'plain-hello',
     summary: '接続条件の提案',
-    description: 'クライアントが対応 TLS バージョン、暗号スイート候補、SNI、key share を送り、接続条件を提案します。',
+    description: 'クライアントが対応 TLS version、cipher suite 候補、SNI、key share を送り、接続条件を提案します。',
     clientState: 'TLS条件を送信',
     serverState: '候補を選ぶ',
+    detailPath: '/security/transport-security/tls/client-hello',
   },
   {
     id: 'server-hello',
@@ -39,10 +42,11 @@ const STEPS: TlsHandshakeStep[] = [
     direction: 'server-to-client',
     messageLabel: 'ServerHello',
     channelState: 'plain-hello',
-    summary: '方式確定と handshake keys 導出開始',
-    description: 'サーバーが採用した方式と key share を返します。ここで双方が handshake keys を導出し始めます。',
+    summary: 'TLS version / cipher suite 確定と handshake keys 導出開始',
+    description: 'サーバーが採用した TLS version、cipher suite、key share を返します。ここで双方が handshake keys を導出し始めます。',
     clientState: '鍵導出を開始',
     serverState: '採用方式を返答',
+    detailPath: '/security/transport-security/tls/server-hello',
   },
   {
     id: 'encrypted-extensions',
@@ -61,10 +65,11 @@ const STEPS: TlsHandshakeStep[] = [
     direction: 'server-to-client',
     messageLabel: 'Certificate + CertificateVerify',
     channelState: 'handshake-protected',
-    summary: 'サーバー本人性の証明',
-    description: 'サーバーが証明書チェーンと CertificateVerify を送り、サーバー本人性を示します。クライアントはホスト名、期限、CA 連鎖、署名を確認します。',
+    summary: 'サーバーの本人性の証明',
+    description: 'サーバーが証明書チェーンと CertificateVerify を送り、サーバーの本人性を示します。クライアントはホスト名、期限、CA 連鎖、署名を確認します。',
     clientState: '証明書を確認',
     serverState: '本人性を証明',
+    detailPath: '/security/transport-security/tls/certificate',
   },
   {
     id: 'server-finished',
@@ -93,11 +98,11 @@ const STEPS: TlsHandshakeStep[] = [
 const TERMS: TlsTerm[] = [
   {
     term: 'TLS version',
-    note: 'どの TLS 世代を使うかを示す情報です。',
+    note: 'この接続で使う TLS の世代候補です。',
   },
   {
     term: 'cipher suite',
-    note: '使う暗号方式の候補です。',
+    note: 'この接続で使う暗号方式の候補です。',
   },
   {
     term: 'SNI',
@@ -105,11 +110,11 @@ const TERMS: TlsTerm[] = [
   },
   {
     term: 'key share',
-    note: '鍵交換のために送る材料です。',
+    note: '鍵交換のために送る公開値です。',
   },
   {
     term: 'handshake keys',
-    note: 'ハンドシェイク中のメッセージを保護する一時鍵です。',
+    note: '後続の handshake メッセージを保護する一時鍵です。',
   },
   {
     term: 'CertificateVerify',
@@ -201,16 +206,25 @@ export function TlsHandshakePlayer() {
                 </div>
               </div>
 
-              <div aria-live="polite" style={statusPanelStyle}>
-                <div style={statusMetaRowStyle}>
-                  <span>ステップ {stepIndex + 1} / {totalSteps}</span>
-                  <span>送信方向: {directionLabel(step.direction)}</span>
+                <div aria-live="polite" style={statusPanelStyle}>
+                  <div style={statusMetaRowStyle}>
+                    <span>ステップ {stepIndex + 1} / {totalSteps}</span>
+                    <span>送信方向: {directionLabel(step.direction)}</span>
+                  </div>
+                  <div style={statusTitleStyle}>{step.title}</div>
+                  <p style={statusBodyStyle}>{step.description}</p>
+                  <div style={statusFooterStyle}>
+                    {step.detailPath ? (
+                      <Link to={step.detailPath} style={detailLinkStyle}>
+                        このステップを詳しく見る
+                      </Link>
+                    ) : (
+                      <span style={detailPlaceholderStyle} aria-hidden="true" />
+                    )}
+                  </div>
                 </div>
-                <div style={statusTitleStyle}>{step.title}</div>
-                <p style={statusBodyStyle}>{step.description}</p>
-              </div>
-            </>
-          );
+              </>
+            );
         }}
       />
 
@@ -470,7 +484,7 @@ const statusPanelStyle: CSSProperties = {
   borderRadius: '8px',
   background: '#f8f9fa',
   padding: '0.65rem 0.8rem',
-  height: '6.4rem',
+  height: '8.2rem',
   overflowY: 'auto',
 };
 
@@ -494,6 +508,30 @@ const statusBodyStyle: CSSProperties = {
   color: '#495057',
   lineHeight: 1.45,
   fontSize: '0.87rem',
+};
+
+const statusFooterStyle: CSSProperties = {
+  marginTop: '0.45rem',
+  minHeight: '2rem',
+  display: 'flex',
+  alignItems: 'center',
+};
+
+const detailLinkStyle: CSSProperties = {
+  display: 'inline-block',
+  padding: '0.38rem 0.72rem',
+  borderRadius: '8px',
+  background: '#0d6efd',
+  color: '#fff',
+  textDecoration: 'none',
+  fontWeight: 700,
+  fontSize: '0.84rem',
+};
+
+const detailPlaceholderStyle: CSSProperties = {
+  display: 'inline-block',
+  minWidth: '1px',
+  minHeight: '2rem',
 };
 
 const termsWrapStyle: CSSProperties = {

@@ -1,11 +1,15 @@
 ﻿import type { CSSProperties } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { AppShell } from './components/AppShell';
+import { ScrollToTop } from './components/ScrollToTop';
 import { BubbleSortPage } from './pages/BubbleSortPage';
 import { AlgorithmsPage } from './pages/AlgorithmsPage';
 import { SecurityPage } from './pages/security/SecurityPage';
 import { TransportSecurityPage } from './pages/security/TransportSecurityPage';
 import { TransportMethodPage } from './pages/security/TransportMethodPage';
+import { TlsClientHelloStepPage } from './pages/security/TlsClientHelloStepPage';
+import { TlsServerHelloStepPage } from './pages/security/TlsServerHelloStepPage';
+import { TlsCertificateStepPage } from './pages/security/TlsCertificateStepPage';
 import { PublicKeyCryptoPage } from './pages/security/PublicKeyCryptoPage';
 import { DigitalSignaturePage } from './pages/security/DigitalSignaturePage';
 import { CertificateAuthorityPage } from './pages/security/CertificateAuthorityPage';
@@ -48,6 +52,7 @@ function HomePage() {
 export function AppRouter() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePage />} />
@@ -56,6 +61,12 @@ export function AppRouter() {
 
           <Route path="/security" element={<SecurityPage />} />
           <Route path="/security/transport-security" element={<TransportSecurityPage />} />
+          <Route path="/security/transport-security/tls/client-hello" element={<TlsClientHelloStepPage />} />
+          <Route path="/security/transport-security/tls/server-hello" element={<TlsServerHelloStepPage />} />
+          <Route path="/security/transport-security/tls/certificate" element={<TlsCertificateStepPage />} />
+          <Route path="/security/transport-security/tls/steps/client-hello" element={<Navigate to="/security/transport-security/tls/client-hello" replace />} />
+          <Route path="/security/transport-security/tls/steps/server-hello" element={<Navigate to="/security/transport-security/tls/server-hello" replace />} />
+          <Route path="/security/transport-security/tls/steps/certificate" element={<Navigate to="/security/transport-security/tls/certificate" replace />} />
           <Route path="/security/transport-security/:methodId" element={<TransportMethodPage />} />
           <Route path="/security/public-key-crypto" element={<PublicKeyCryptoPage />} />
           <Route path="/security/digital-signature" element={<DigitalSignaturePage />} />
