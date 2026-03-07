@@ -11,6 +11,8 @@ import { TlsClientHelloStepPage } from './pages/security/TlsClientHelloStepPage'
 import { TlsServerHelloStepPage } from './pages/security/TlsServerHelloStepPage';
 import { TlsEncryptedExtensionsStepPage } from './pages/security/TlsEncryptedExtensionsStepPage';
 import { TlsCertificateStepPage } from './pages/security/TlsCertificateStepPage';
+import { TlsServerFinishedStepPage } from './pages/security/TlsServerFinishedStepPage';
+import { TlsClientFinishedStepPage } from './pages/security/TlsClientFinishedStepPage';
 import { PublicKeyCryptoPage } from './pages/security/PublicKeyCryptoPage';
 import { DigitalSignaturePage } from './pages/security/DigitalSignaturePage';
 import { CertificateAuthorityPage } from './pages/security/CertificateAuthorityPage';
@@ -66,10 +68,14 @@ export function AppRouter() {
           <Route path="/security/transport-security/tls/server-hello" element={<TlsServerHelloStepPage />} />
           <Route path="/security/transport-security/tls/encrypted-extensions" element={<TlsEncryptedExtensionsStepPage />} />
           <Route path="/security/transport-security/tls/certificate" element={<TlsCertificateStepPage />} />
+          <Route path="/security/transport-security/tls/server-finished" element={<TlsServerFinishedStepPage />} />
+          <Route path="/security/transport-security/tls/client-finished" element={<TlsClientFinishedStepPage />} />
           <Route path="/security/transport-security/tls/steps/client-hello" element={<Navigate to="/security/transport-security/tls/client-hello" replace />} />
           <Route path="/security/transport-security/tls/steps/server-hello" element={<Navigate to="/security/transport-security/tls/server-hello" replace />} />
           <Route path="/security/transport-security/tls/steps/encrypted-extensions" element={<Navigate to="/security/transport-security/tls/encrypted-extensions" replace />} />
           <Route path="/security/transport-security/tls/steps/certificate" element={<Navigate to="/security/transport-security/tls/certificate" replace />} />
+          <Route path="/security/transport-security/tls/steps/server-finished" element={<Navigate to="/security/transport-security/tls/server-finished" replace />} />
+          <Route path="/security/transport-security/tls/steps/client-finished" element={<Navigate to="/security/transport-security/tls/client-finished" replace />} />
           <Route path="/security/transport-security/:methodId" element={<TransportMethodPage />} />
           <Route path="/security/public-key-crypto" element={<PublicKeyCryptoPage />} />
           <Route path="/security/digital-signature" element={<DigitalSignaturePage />} />

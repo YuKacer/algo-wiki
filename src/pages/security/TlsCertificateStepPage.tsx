@@ -62,6 +62,7 @@ export function TlsCertificateStepPage() {
 
       <TlsStepFooterNav
         leftLink={{ to: '/security/transport-security/tls/encrypted-extensions', label: 'EncryptedExtensions へ' }}
+        rightLink={{ to: '/security/transport-security/tls/server-finished', label: 'Server Finished へ' }}
       />
     </main>
   );

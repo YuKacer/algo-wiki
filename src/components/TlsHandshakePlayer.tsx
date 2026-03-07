@@ -31,7 +31,8 @@ const STEPS: TlsHandshakeStep[] = [
     messageLabel: 'ClientHello',
     channelState: 'plain-hello',
     summary: '接続条件の提案',
-    description: 'クライアントが対応 TLS version、cipher suite 候補、SNI、key share を送り、接続条件を提案します。',
+    description:
+      'クライアントが対応する TLS version、cipher suite 候補、SNI、key share を送り、この接続で使いたい条件を提案します。',
     clientState: 'TLS条件を送信',
     serverState: '候補を選ぶ',
     detailPath: '/security/transport-security/tls/client-hello',
@@ -42,8 +43,9 @@ const STEPS: TlsHandshakeStep[] = [
     direction: 'server-to-client',
     messageLabel: 'ServerHello',
     channelState: 'plain-hello',
-    summary: 'TLS version / cipher suite 確定と handshake keys 導出開始',
-    description: 'サーバーが採用した TLS version、cipher suite、key share を返します。ここで双方が handshake keys を導出し始めます。',
+    summary: 'TLS version / cipher suite の確定と handshake keys 導出開始',
+    description:
+      'サーバーが採用した TLS version、cipher suite、key share を返します。ここで双方が handshake keys の導出を始めます。',
     clientState: '鍵導出を開始',
     serverState: '採用方式を返答',
     detailPath: '/security/transport-security/tls/server-hello',
@@ -55,7 +57,8 @@ const STEPS: TlsHandshakeStep[] = [
     messageLabel: 'EncryptedExtensions',
     channelState: 'handshake-protected',
     summary: '拡張条件の通知',
-    description: 'サーバーが選んだ拡張条件を通知します。ここから後続のハンドシェイクは handshake keys で保護されます。',
+    description:
+      'サーバーが選んだ拡張条件を通知します。ここから後続のハンドシェイクメッセージは handshake keys で保護されます。',
     clientState: '拡張条件を受信',
     serverState: '拡張条件を通知',
     detailPath: '/security/transport-security/tls/encrypted-extensions',
@@ -66,10 +69,11 @@ const STEPS: TlsHandshakeStep[] = [
     direction: 'server-to-client',
     messageLabel: 'Certificate + CertificateVerify',
     channelState: 'handshake-protected',
-    summary: 'サーバーの本人性の証明',
-    description: 'サーバーが証明書チェーンと CertificateVerify を送り、サーバーの本人性を示します。クライアントはホスト名、期限、CA 連鎖、署名を確認します。',
+    summary: 'サーバー認証の材料を送る',
+    description:
+      'サーバーが証明書チェーンと CertificateVerify を送り、接続先サーバーが正当な相手であることを示します。クライアントはホスト名、期限、CA 連鎖、署名を確認します。',
     clientState: '証明書を確認',
-    serverState: '本人性を証明',
+    serverState: '認証材料を送る',
     detailPath: '/security/transport-security/tls/certificate',
   },
   {
@@ -79,9 +83,11 @@ const STEPS: TlsHandshakeStep[] = [
     messageLabel: 'Server Finished',
     channelState: 'handshake-protected',
     summary: 'サーバー側のハンドシェイク送信完了',
-    description: 'サーバーが Finished を送り、ここまでのハンドシェイク完全性を示します。クライアントはこれを検証します。',
+    description:
+      'サーバーが Finished を送り、ここまでのハンドシェイク内容に食い違いがないことを示します。クライアントはこれを検証します。',
     clientState: 'Finished を検証',
     serverState: '送信側を完了',
+    detailPath: '/security/transport-security/tls/server-finished',
   },
   {
     id: 'client-finished',
@@ -90,16 +96,18 @@ const STEPS: TlsHandshakeStep[] = [
     messageLabel: 'Client Finished',
     channelState: 'application-ready',
     summary: 'ハンドシェイク完了',
-    description: 'クライアントが Finished を返すとハンドシェイク完了です。以後はアプリケーションデータを暗号化します。',
+    description:
+      'クライアントが Finished を返すとハンドシェイク完了です。以後はアプリケーションデータを暗号化してやり取りします。',
     clientState: 'Finished を返す',
     serverState: 'アプリ通信開始',
+    detailPath: '/security/transport-security/tls/client-finished',
   },
 ];
 
-const TERMS: TlsTerm[] = [
+const STEP_TERMS: TlsTerm[] = [
   {
     term: 'TLS version',
-    note: 'この接続で使う TLS の世代候補です。',
+    note: 'この接続で使う TLS の版の候補です。',
   },
   {
     term: 'cipher suite',
@@ -107,7 +115,7 @@ const TERMS: TlsTerm[] = [
   },
   {
     term: 'SNI',
-    note: '接続したいサーバー名を伝える情報です。',
+    note: '接続したいホスト名を伝える情報です。',
   },
   {
     term: 'key share',
@@ -115,15 +123,15 @@ const TERMS: TlsTerm[] = [
   },
   {
     term: 'handshake keys',
-    note: '後続の handshake メッセージを保護する一時鍵です。',
+    note: 'ServerHello の後に導出され、後続のハンドシェイクメッセージを保護する一時鍵です。',
   },
   {
     term: 'CertificateVerify',
-    note: 'サーバーが秘密鍵を持つことを示す署名です。',
+    note: 'サーバーが証明書に対応する秘密鍵を持っていることを示す署名です。',
   },
   {
     term: 'Finished',
-    note: 'ここまでのハンドシェイク完全性を確かめるメッセージです。',
+    note: 'ここまでのハンドシェイク内容に食い違いがないかを確かめるメッセージです。',
   },
 ];
 
@@ -207,32 +215,35 @@ export function TlsHandshakePlayer() {
                 </div>
               </div>
 
-                <div aria-live="polite" style={statusPanelStyle}>
-                  <div style={statusMetaRowStyle}>
-                    <span>ステップ {stepIndex + 1} / {totalSteps}</span>
-                    <span>送信方向: {directionLabel(step.direction)}</span>
-                  </div>
-                  <div style={statusTitleStyle}>{step.title}</div>
-                  <p style={statusBodyStyle}>{step.description}</p>
-                  <div style={statusFooterStyle}>
-                    {step.detailPath ? (
-                      <Link to={step.detailPath} style={detailLinkStyle}>
-                        このステップを詳しく見る
-                      </Link>
-                    ) : (
-                      <span style={detailPlaceholderStyle} aria-hidden="true" />
-                    )}
-                  </div>
+              <div aria-live="polite" style={statusPanelStyle}>
+                <div style={statusMetaRowStyle}>
+                  <span>ステップ {stepIndex + 1} / {totalSteps}</span>
+                  <span>送信方向: {directionLabel(step.direction)}</span>
                 </div>
-              </>
-            );
+                <div style={statusTitleStyle}>{step.title}</div>
+                <p style={statusBodyStyle}>{step.description}</p>
+                <div style={statusFooterStyle}>
+                  {step.detailPath ? (
+                    <Link to={step.detailPath} style={detailLinkStyle}>
+                      このステップを詳しく見る
+                    </Link>
+                  ) : (
+                    <span style={detailPlaceholderStyle} aria-hidden="true" />
+                  )}
+                </div>
+              </div>
+            </>
+          );
         }}
       />
 
       <section style={termsWrapStyle}>
-        <h3 style={termsTitleStyle}>用語メモ</h3>
+        <h3 style={termsTitleStyle}>この図で出てくる用語</h3>
+        <p style={termsLeadStyle}>
+          ハンドシェイク全体図で頻出する用語だけを、ここで簡単に整理しています。
+        </p>
         <div style={termsListStyle}>
-          {TERMS.map((term) => (
+          {STEP_TERMS.map((term) => (
             <div key={term.term} style={termRowStyle}>
               <div style={termKeyStyle}>
                 <code>{term.term}</code>
@@ -371,11 +382,12 @@ function stateChipStyle(sending: boolean, receiving: boolean): CSSProperties {
 }
 
 function messagePillStyle(channelState: ChannelState): CSSProperties {
-  const colorSet = channelState === 'plain-hello'
-    ? { background: '#fff', color: '#495057', borderColor: '#ced4da' }
-    : channelState === 'handshake-protected'
-      ? { background: '#f3e8ff', color: '#6f42c1', borderColor: '#d8b4fe' }
-      : { background: '#d1e7dd', color: '#0f5132', borderColor: '#a3cfbb' };
+  const colorSet =
+    channelState === 'plain-hello'
+      ? { background: '#fff', color: '#495057', borderColor: '#ced4da' }
+      : channelState === 'handshake-protected'
+        ? { background: '#f3e8ff', color: '#6f42c1', borderColor: '#d8b4fe' }
+        : { background: '#d1e7dd', color: '#0f5132', borderColor: '#a3cfbb' };
 
   return {
     position: 'absolute',
@@ -544,9 +556,16 @@ const termsWrapStyle: CSSProperties = {
 
 const termsTitleStyle: CSSProperties = {
   margin: 0,
-  marginBottom: '0.65rem',
+  marginBottom: '0.3rem',
   fontSize: '0.98rem',
   color: '#1f2937',
+};
+
+const termsLeadStyle: CSSProperties = {
+  margin: '0 0 0.65rem',
+  color: '#64748b',
+  fontSize: '0.86rem',
+  lineHeight: 1.55,
 };
 
 const termsListStyle: CSSProperties = {
