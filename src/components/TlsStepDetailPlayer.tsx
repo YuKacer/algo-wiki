@@ -506,8 +506,8 @@ const statusPanelStyle: CSSProperties = {
   border: '1px solid #dee2e6',
   borderRadius: '8px',
   background: '#f8f9fa',
-  padding: '0.7rem 0.85rem',
-  height: '16rem',
+  padding: '0.7rem 0.85rem 0.55rem',
+  height: '15.2rem',
   overflowY: 'auto',
 };
 

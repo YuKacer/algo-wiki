@@ -1,83 +1,74 @@
 import type { CSSProperties } from 'react';
-import { TlsServerHelloStepPlayer } from '../../components/TlsServerHelloStepPlayer';
+import { TlsEncryptedExtensionsStepPlayer } from '../../components/TlsEncryptedExtensionsStepPlayer';
 import { TlsStepBreadcrumbs } from '../../components/TlsStepBreadcrumbs';
 import { TlsStepFooterNav } from '../../components/TlsStepFooterNav';
 
 const SUMMARY = [
-  'ServerHello は、サーバが ClientHello への返答として、この接続で採用する TLS 条件を正式に返すメッセージです。',
-  'ここで TLS バージョン・暗号スイートサーバ側の key_share が確定し、候補のやり取りが終わります。',
-  'この返答を受けて双方が handshake keys の導出を始め、次の EncryptedExtensions 以降は保護付きで進みます。',
+  'EncryptedExtensions は、ServerHello のあとにサーバが追加の拡張条件を保護付きで伝えるメッセージです。',
+  'ここでは ALPN など、この接続で有効になる拡張条件が通知されます。TLS バージョンや暗号スイートはここでは変わりません。',
+  'このメッセージは handshake keys で保護されており、受信後は認証構成に応じた後続メッセージへ進みます。',
 ];
 
-const FIXED_ROWS = [
+const EXTENSION_ROWS = [
   {
-    term: 'TLS バージョン',
-    decide: 'この接続で使う TLS の版を確定します。',
-    result: '以後のハンドシェイクは、選ばれた TLS バージョンを前提に進みます。',
+    term: 'ALPN',
+    decide: 'HTTP/2 など、上位で使うアプリケーションプロトコルを必要に応じて返します。',
+    result: 'クライアントとサーバで、後続のアプリケーション通信に使うプロトコルをそろえられます。',
   },
   {
-    term: '暗号スイート',
-    decide: 'この接続で採用する保護方式を確定します。',
-    result: '以後の鍵導出や通信保護の前提が固まります。',
-  },
-  {
-    term: 'key_share',
-    decide: 'サーバ側の鍵交換材料を返します。',
-    result: 'クライアントが共有秘密を導くための材料がそろいます。',
+    term: '追加の拡張条件',
+    decide: 'サーバがこの接続で有効にする拡張条件を返します。',
+    result: 'クライアントは、後続メッセージや通信の扱いをその条件に合わせられます。',
   },
 ];
 
 const NEXT_STATE_ROWS = [
   {
-    change: '候補一覧から採用値へ確定する',
-    effect: 'ClientHello までに提示されていた候補の中から、この接続で実際に使う値が固定されます。',
+    change: '後続の認証メッセージへ進む',
+    effect: 'サーバ認証を行う構成では、次に Certificate と CertificateVerify を送ります。',
   },
   {
-    change: 'handshake keys の導出が始まる',
-    effect: 'ServerHello を受けて双方が共有秘密をもとに鍵導出を始め、後続のハンドシェイクを保護する準備に入ります。',
+    change: '拡張条件を前提に処理が続く',
+    effect: 'ALPN など、ここで通知された条件を前提に後続のハンドシェイクとアプリケーション処理が続きます。',
   },
   {
-    change: '後続のメッセージが保護付きに切り替わる',
-    effect: '次の EncryptedExtensions 以降は、導出した handshake keys を使って保護付きで進みます。',
-  },
-  {
-    change: 'サーバが EncryptedExtensions に進む',
-    effect: 'サーバは確定した条件を前提に、選んだ拡張内容を EncryptedExtensions で返せるようになります。',
+    change: '保護付きのハンドシェイクが続く',
+    effect: 'Finished までの後続メッセージは handshake keys で保護されたまま進みます。',
   },
 ];
 
 const TERMS = [
   {
-    term: 'TLS バージョン',
-    note: 'この接続で使う TLS の版です。ServerHello で候補から 1 つに確定します。',
+    term: 'EncryptedExtensions',
+    note: 'ServerHello のあとに来る、追加の拡張条件をまとめて送るメッセージです。handshake keys で保護されます。',
   },
   {
-    term: '暗号スイート',
-    note: 'この接続で採用する暗号方式です。ServerHello で実際に使う値が決まります。',
-  },
-  {
-    term: 'key_share',
-    note: '鍵交換のために双方が持ち寄る公開値です。ServerHello ではサーバ側の値が返されます。',
+    term: 'ALPN',
+    note: 'Application-Layer Protocol Negotiation の略です。HTTP/2 など、上位で使うプロトコルをサーバが選んで返します。',
   },
   {
     term: 'handshake keys',
-    note: '後続のハンドシェイクメッセージを保護する一時鍵です。ServerHello を受けて導出が始まります。',
+    note: 'ServerHello をもとに双方が導出する一時鍵です。後続のハンドシェイクメッセージを保護します。',
   },
   {
-    term: 'EncryptedExtensions',
-    note: 'ServerHello の次に来る、サーバが選んだ拡張条件を伝えるメッセージです。handshake keys で保護されます。',
+    term: 'Certificate',
+    note: 'サーバ認証を行う構成で、サーバ証明書チェーンを送るメッセージです。',
+  },
+  {
+    term: 'CertificateVerify',
+    note: '証明書に対応する秘密鍵をサーバが持つことを示す署名メッセージです。',
   },
 ];
 
-export function TlsServerHelloStepPage() {
+export function TlsEncryptedExtensionsStepPage() {
   return (
     <main style={pageStyle}>
-      <TlsStepBreadcrumbs currentLabel="ServerHello" />
+      <TlsStepBreadcrumbs currentLabel="EncryptedExtensions" />
 
-      <h1 style={pageTitleStyle}>ServerHello の詳細</h1>
+      <h1 style={pageTitleStyle}>EncryptedExtensions の詳細</h1>
       <p style={leadStyle}>
-        ServerHello は、サーバが ClientHello に対して「この条件で TLS を続ける」と正式に返答するメッセージです。
-        ここで採用する TLS 条件が確定し、以後のハンドシェイクを保護するための鍵の導出が始まります。
+        EncryptedExtensions は、ServerHello のあとにサーバが追加の拡張条件を保護付きで返すメッセージです。
+        ここでは TLS の暗号条件そのものではなく、ALPN などこの接続で有効にする拡張条件が通知されます。
       </p>
 
       <section style={panelStyle}>
@@ -90,9 +81,9 @@ export function TlsServerHelloStepPage() {
       </section>
 
       <section style={panelStyle}>
-        <h2 style={sectionTitleStyle}>ここで確定すること</h2>
+        <h2 style={sectionTitleStyle}>ここで伝えること</h2>
         <p style={sectionLeadStyle}>
-          ServerHello は、候補の比較を終えて「この接続で実際に使う条件」を固定する場面です。どの値がここで確定するかを先に押さえると、その後の鍵導出が追いやすくなります。
+          EncryptedExtensions は、ServerHello で暗号条件が確定したあとに、追加の拡張条件だけを保護付きで伝える場面です。何がここで通知されるかを先に押さえると、その後の認証メッセージや後続ハンドシェイクとのつながりが見やすくなります。
         </p>
         <div style={decisionTableWrapStyle}>
           <table style={decisionTableStyle}>
@@ -103,21 +94,21 @@ export function TlsServerHelloStepPage() {
             </colgroup>
             <thead>
               <tr>
-                <th scope="col" style={decisionHeaderCellStyle}>確定する項目</th>
-                <th scope="col" style={decisionHeaderCellStyle}>ここで決まること</th>
+                <th scope="col" style={decisionHeaderCellStyle}>見る項目</th>
+                <th scope="col" style={decisionHeaderCellStyle}>ここで伝えること</th>
                 <th scope="col" style={decisionHeaderCellStyle}>次に効く結果</th>
               </tr>
             </thead>
             <tbody>
-              {FIXED_ROWS.map((row, index) => (
+              {EXTENSION_ROWS.map((row, index) => (
                 <tr key={row.term}>
-                  <td style={index === FIXED_ROWS.length - 1 ? decisionTermCellLastStyle : decisionTermCellStyle}>
+                  <td style={index === EXTENSION_ROWS.length - 1 ? decisionTermCellLastStyle : decisionTermCellStyle}>
                     <code>{row.term}</code>
                   </td>
-                  <td style={index === FIXED_ROWS.length - 1 ? decisionBodyCellLastStyle : decisionBodyCellStyle}>
+                  <td style={index === EXTENSION_ROWS.length - 1 ? decisionBodyCellLastStyle : decisionBodyCellStyle}>
                     {row.decide}
                   </td>
-                  <td style={index === FIXED_ROWS.length - 1 ? decisionBodyCellLastStyle : decisionBodyCellStyle}>
+                  <td style={index === EXTENSION_ROWS.length - 1 ? decisionBodyCellLastStyle : decisionBodyCellStyle}>
                     {row.result}
                   </td>
                 </tr>
@@ -130,15 +121,15 @@ export function TlsServerHelloStepPage() {
       <section style={panelStyle}>
         <h2 style={sectionTitleStyle}>内部の流れ</h2>
         <p style={sectionLeadStyle}>
-          サーバが返す条件を固めるところから、クライアントがそれを受け取って handshake keys の導出に入るところまでを順に追います。
+          サーバが返す拡張条件を整理するところから、クライアントがそれを受け取り、認証構成に応じた後続メッセージへ進むところまでを順に追います。
         </p>
-        <TlsServerHelloStepPlayer />
+        <TlsEncryptedExtensionsStepPlayer />
       </section>
 
       <section style={panelStyle}>
-        <h2 style={sectionTitleStyle}>この後どう変わるか</h2>
+        <h2 style={sectionTitleStyle}>この後どうつながるか</h2>
         <p style={sectionLeadStyle}>
-          ServerHello を境に、候補のやり取りから保護付きのハンドシェイクへ移り、次に EncryptedExtensions へ進みます。ここで起きる変化だけを並べて確認します。
+          EncryptedExtensions は単独の通知ではなく、その後の認証メッセージと保護付きハンドシェイクの前提になります。後続の流れだけを並べて確認します。
         </p>
         <div style={nextStateTableWrapStyle}>
           <table style={nextStateTableStyle}>
@@ -148,7 +139,7 @@ export function TlsServerHelloStepPage() {
             </colgroup>
             <thead>
               <tr>
-                <th scope="col" style={nextStateHeaderCellStyle}>変化</th>
+                <th scope="col" style={nextStateHeaderCellStyle}>次の段階</th>
                 <th scope="col" style={nextStateHeaderCellStyle}>何が起きるか</th>
               </tr>
             </thead>
@@ -183,8 +174,8 @@ export function TlsServerHelloStepPage() {
       </section>
 
       <TlsStepFooterNav
-        leftLink={{ to: '/security/transport-security/tls/client-hello', label: 'ClientHello へ' }}
-        rightLink={{ to: '/security/transport-security/tls/encrypted-extensions', label: 'EncryptedExtensions へ' }}
+        leftLink={{ to: '/security/transport-security/tls/server-hello', label: 'ServerHello へ' }}
+        rightLink={{ to: '/security/transport-security/tls/certificate', label: 'Certificate へ' }}
       />
     </main>
   );

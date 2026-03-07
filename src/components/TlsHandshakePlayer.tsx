@@ -58,6 +58,7 @@ const STEPS: TlsHandshakeStep[] = [
     description: 'サーバーが選んだ拡張条件を通知します。ここから後続のハンドシェイクは handshake keys で保護されます。',
     clientState: '拡張条件を受信',
     serverState: '拡張条件を通知',
+    detailPath: '/security/transport-security/tls/encrypted-extensions',
   },
   {
     id: 'certificate',

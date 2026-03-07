@@ -352,7 +352,7 @@ const headerCellStyle: CSSProperties = {
   borderBottom: '1.5px solid #cbd5e1',
   background: '#eff4f8',
   color: '#1f2937',
-  textAlign: 'left',
+  textAlign: 'center',
   verticalAlign: 'bottom',
   lineHeight: 1.28,
   fontSize: '0.8rem',

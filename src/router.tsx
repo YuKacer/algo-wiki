@@ -9,6 +9,7 @@ import { TransportSecurityPage } from './pages/security/TransportSecurityPage';
 import { TransportMethodPage } from './pages/security/TransportMethodPage';
 import { TlsClientHelloStepPage } from './pages/security/TlsClientHelloStepPage';
 import { TlsServerHelloStepPage } from './pages/security/TlsServerHelloStepPage';
+import { TlsEncryptedExtensionsStepPage } from './pages/security/TlsEncryptedExtensionsStepPage';
 import { TlsCertificateStepPage } from './pages/security/TlsCertificateStepPage';
 import { PublicKeyCryptoPage } from './pages/security/PublicKeyCryptoPage';
 import { DigitalSignaturePage } from './pages/security/DigitalSignaturePage';
@@ -63,9 +64,11 @@ export function AppRouter() {
           <Route path="/security/transport-security" element={<TransportSecurityPage />} />
           <Route path="/security/transport-security/tls/client-hello" element={<TlsClientHelloStepPage />} />
           <Route path="/security/transport-security/tls/server-hello" element={<TlsServerHelloStepPage />} />
+          <Route path="/security/transport-security/tls/encrypted-extensions" element={<TlsEncryptedExtensionsStepPage />} />
           <Route path="/security/transport-security/tls/certificate" element={<TlsCertificateStepPage />} />
           <Route path="/security/transport-security/tls/steps/client-hello" element={<Navigate to="/security/transport-security/tls/client-hello" replace />} />
           <Route path="/security/transport-security/tls/steps/server-hello" element={<Navigate to="/security/transport-security/tls/server-hello" replace />} />
+          <Route path="/security/transport-security/tls/steps/encrypted-extensions" element={<Navigate to="/security/transport-security/tls/encrypted-extensions" replace />} />
           <Route path="/security/transport-security/tls/steps/certificate" element={<Navigate to="/security/transport-security/tls/certificate" replace />} />
           <Route path="/security/transport-security/:methodId" element={<TransportMethodPage />} />
           <Route path="/security/public-key-crypto" element={<PublicKeyCryptoPage />} />
