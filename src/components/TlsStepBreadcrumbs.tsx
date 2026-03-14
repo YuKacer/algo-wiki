@@ -7,7 +7,7 @@ interface TlsStepBreadcrumbsProps {
 
 const SEGMENTS = [
   { label: 'セキュリティ', to: '/security' },
-  { label: '通信保護', to: '/security/transport-security' },
+  { label: '通信の保護', to: '/security/transport-security' },
   { label: 'TLS', to: '/security/transport-security/tls' },
 ];
 

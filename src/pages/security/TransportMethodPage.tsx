@@ -1,20 +1,22 @@
-import type { CSSProperties } from 'react';
+﻿import type { CSSProperties } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { TlsHandshakePlayer } from '../../components/TlsHandshakePlayer';
 import { TlsStepBreadcrumbs } from '../../components/TlsStepBreadcrumbs';
 import { TlsStepFooterNav } from '../../components/TlsStepFooterNav';
 import { type TransportMethodId, getTransportMethodById } from '../../content/securityTransportModel';
 
-const ORDER: TransportMethodId[] = ['tls', 'ipsec', 'ssh', 'vpn', 'dns-protection'];
+const ORDER: TransportMethodId[] = ['tls', 'ipsec', 'ssh', 'wireguard', 'dnssec', 'dot-doh'];
 
 interface TlsProtectionRow {
   aspect: string;
   protects: string;
+  mechanism: string;
   caution: string;
 }
 
 interface TlsUsageRow {
   scene: string;
+  fit: string;
   stance: string;
 }
 
@@ -24,55 +26,62 @@ interface TlsTerm {
 }
 
 const TLS_LEAD =
-  'TLS は Web サイトや API で広く使われる通信保護方式です。通信途中の盗み見や改ざんを抑え、証明書検証を通じて接続先サーバが本物か確認できるようにします。一方で、端末自体が侵害されている場合や TLS 終端以降の内部区間は、自動では守れません。';
+  'TLS は Web サイトや API などで広く使われる、通信を保護する仕組みです。';
 
 const TLS_SUMMARY = [
-  'TLS は主に Web / API などのアプリケーション通信を保護する方式です。',
+  'TLS は主に Web や API などのアプリケーション通信を保護する方式です。',
   '通信途中の盗み見や改ざんを抑え、接続先サーバが本物か確認できるようにします。',
-  'ネットワーク全体の保護や管理接続は、別の方式と役割分担します。',
+  'ネットワーク全体や管理接続、DNS 保護は別の方式と役割分担します。',
 ];
 
 const TLS_PROTECTION_ROWS: TlsProtectionRow[] = [
   {
     aspect: '機密性',
     protects: '通信途中の第三者に内容を読まれないようにする。',
+    mechanism: 'セッション鍵 / AEAD',
     caution: '端末上で見えている情報や、TLS 終端以降の内部区間は別途保護が必要な場合がある。',
   },
   {
     aspect: '完全性',
     protects: '通信途中で改ざんがあれば検知できる。',
+    mechanism: 'Finished / AEAD',
     caution: '端末やアプリ自体が侵害されている場合は、TLS だけでは防げない。',
   },
   {
-    aspect: 'サーバ認証',
-    protects: '接続先サーバが本物か確認できる。',
-    caution: '証明書運用や名前解決まわりの問題には、関連する対策も必要になる。',
+    aspect: '真正性',
+    protects: '接続相手が正当な相手本人か確認できる。主にサーバ側の確認が行われる。',
+    mechanism: '証明書 / CertificateVerify（デジタル署名）',
+    caution: 'クライアント認証は常に使うわけではない。証明書や信頼設定の運用も重要。',
   },
 ];
 
 const TLS_USAGE_ROWS: TlsUsageRow[] = [
   {
     scene: '公開 Web サイト / API の保護',
-    stance: 'TLS が向く。ブラウザやアプリからの通信を標準的に保護できる。',
+    fit: '◯',
+    stance: 'TLS が向く代表的な場面。ブラウザやアプリからの通信を標準的に保護できる。',
   },
   {
     scene: '拠点間や社内ネットワーク全体の保護',
-    stance: 'ネットワーク全体の接続保護は TLS よりも、VPN や IPsec の領域になる。',
+    fit: '▲',
+    stance: 'アプリ単位では TLS を使うこともあるが、ネットワーク全体をまとめて守る用途は IPsec + IKEv2 や WireGuard などが担う。',
   },
   {
-    scene: '管理者ログインや踏み台接続',
-    stance: 'サーバ管理の接続保護は、TLS よりも SSH の領域になる。',
+    scene: 'サーバーへのシェルログインや踏み台接続',
+    fit: '×',
+    stance: 'サーバー管理のための対話的な接続は、一般に SSH が使われる。',
   },
   {
     scene: 'DNS 改ざん対策',
-    stance: '名前解決の保護は、DNS 保護系の方式を別途組み合わせる。',
+    fit: '×',
+    stance: '名前解決の保護は、Web 通信の TLS とは別に、DNSSEC と DoT / DoH を組み合わせて行う。',
   },
 ];
 
 const TLS_TERMS: TlsTerm[] = [
   {
     term: 'TLS',
-    note: 'Web / API で広く使われる通信保護方式です。通信途中の盗み見や改ざんを抑えます。',
+    note: 'Web / API で広く使われる、通信を保護する仕組みです。通信途中の盗み見や改ざんを抑えます。',
   },
   {
     term: 'ハンドシェイク',
@@ -106,15 +115,17 @@ function methodLink(id: TransportMethodId | null) {
 function methodLeadText(id: TransportMethodId) {
   switch (id) {
     case 'tls':
-      return 'Web/APIで最も広く使われる通信保護方式です。通信路の盗聴・改ざん・なりすまし対策を担います。';
+      return 'Web/API で最も広く使われる通信保護方式です。通信路の盗聴・改ざん・なりすまし対策を担います。';
     case 'ipsec':
-      return 'ネットワーク層で通信路を保護する方式です。拠点間や組織間のネットワーク接続で使われます。';
+      return 'ネットワーク境界や拠点間の通信経路を保護する方式です。機器同士でまとめて通信を守るときに使われます。';
     case 'ssh':
       return '管理系のリモート接続を保護する方式です。サーバー運用や保守作業で使われます。';
-    case 'vpn':
-      return '端末や拠点を安全に内部ネットワークへ接続する方式です。リモートアクセスでよく使われます。';
-    case 'dns-protection':
-      return 'DNS問い合わせの改ざんや盗聴を抑える方式です。名前解決の信頼性を高めます。';
+    case 'wireguard':
+      return '端末や拠点を軽量なトンネルで接続する方式です。リモートアクセスや小規模な拠点接続で使われます。';
+    case 'dnssec':
+      return '名前解決結果が正しいかを検証する方式です。偽の DNS 応答による誘導を防ぐために使われます。';
+    case 'dot-doh':
+      return 'DNS 問い合わせ通信を暗号化する方式です。問い合わせ内容の盗み見や改ざんを抑えるために使われます。';
     default:
       return '';
   }
@@ -131,7 +142,7 @@ function BasicSection(props: {
     <section style={panelStyle}>
       <h2 style={sectionTitleStyle}>基本情報</h2>
       <ul style={listStyle}>
-        <li><strong>レイヤー:</strong> {props.layer}</li>
+        <li><strong>主にどこで効くか:</strong> {props.layer}</li>
         <li><strong>守るもの:</strong> {props.protects}</li>
         <li><strong>主な用途:</strong> {props.usage}</li>
         <li><strong>強み:</strong> {props.strengths}</li>
@@ -156,19 +167,21 @@ function TlsContent() {
       <section style={panelStyle}>
         <h2 style={sectionTitleStyle}>TLS で守れること / 守れないこと</h2>
         <p style={sectionLeadStyle}>
-          TLS が直接守るのは、通信経路上の内容と接続先サーバの確認です。守れる範囲と注意点を観点ごとに並べて見ます。
+          TLS は、通信内容を保護し、通信相手が正当な相手かどうかを確認する仕組みです。
         </p>
         <div style={tableWrapStyle}>
           <table style={tableStyle}>
             <colgroup>
-              <col style={{ width: '18%' }} />
-              <col style={{ width: '42%' }} />
-              <col style={{ width: '40%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '30%' }} />
+              <col style={{ width: '22%' }} />
+              <col style={{ width: '34%' }} />
             </colgroup>
             <thead>
               <tr>
                 <th scope="col" style={headerCellStyle}>観点</th>
                 <th scope="col" style={headerCellStyle}>TLS で守れること</th>
+                <th scope="col" style={headerCellStyle}>主な仕組み</th>
                 <th scope="col" style={headerCellStyle}>注意点</th>
               </tr>
             </thead>
@@ -177,6 +190,7 @@ function TlsContent() {
                 <tr key={row.aspect}>
                   <td style={index === TLS_PROTECTION_ROWS.length - 1 ? termCellLastStyle : termCellStyle}>{row.aspect}</td>
                   <td style={index === TLS_PROTECTION_ROWS.length - 1 ? bodyCellLastStyle : bodyCellStyle}>{row.protects}</td>
+                  <td style={index === TLS_PROTECTION_ROWS.length - 1 ? bodyCellLastStyle : bodyCellStyle}>{row.mechanism}</td>
                   <td style={index === TLS_PROTECTION_ROWS.length - 1 ? bodyCellLastStyle : bodyCellStyle}>{row.caution}</td>
                 </tr>
               ))}
@@ -188,17 +202,19 @@ function TlsContent() {
       <section style={panelStyle}>
         <h2 style={sectionTitleStyle}>TLS が向く場面 / TLS だけでは足りない場面</h2>
         <p style={sectionLeadStyle}>
-          TLS はアプリケーション通信の保護に向きますが、ネットワーク全体や管理接続まで 1 つで置き換える方式ではありません。場面ごとの位置づけを並べて見ます。
+          TLS はアプリケーション通信の保護に向きますが、ネットワーク全体や管理接続まで 1 つで置き換える方式ではありません。
         </p>
         <div style={tableWrapStyle}>
           <table style={tableStyle}>
             <colgroup>
-              <col style={{ width: '34%' }} />
-              <col style={{ width: '66%' }} />
+              <col style={{ width: '30%' }} />
+              <col style={{ width: '10%' }} />
+              <col style={{ width: '60%' }} />
             </colgroup>
             <thead>
               <tr>
                 <th scope="col" style={headerCellStyle}>場面</th>
+                <th scope="col" style={{ ...headerCellStyle, textAlign: 'center' }}>適合度</th>
                 <th scope="col" style={headerCellStyle}>TLS の位置づけ</th>
               </tr>
             </thead>
@@ -206,6 +222,7 @@ function TlsContent() {
               {TLS_USAGE_ROWS.map((row, index) => (
                 <tr key={row.scene}>
                   <td style={index === TLS_USAGE_ROWS.length - 1 ? termCellLastStyle : termCellStyle}>{row.scene}</td>
+                  <td style={{ ...(index === TLS_USAGE_ROWS.length - 1 ? bodyCellLastStyle : bodyCellStyle), textAlign: 'center', fontWeight: 700 }}>{row.fit}</td>
                   <td style={index === TLS_USAGE_ROWS.length - 1 ? bodyCellLastStyle : bodyCellStyle}>{row.stance}</td>
                 </tr>
               ))}
@@ -217,7 +234,7 @@ function TlsContent() {
       <section style={panelStyle}>
         <h2 style={sectionTitleStyle}>ハンドシェイクの流れ（TLS 1.3）</h2>
         <p style={sectionLeadStyle}>
-          TLS 1.3 では、ClientHello から始まり、条件のすり合わせ・鍵共有・サーバ認証を経て暗号化通信へ入ります。ここでは細部よりも全体の流れを俯瞰します。
+          TLS 1.3 では、ClientHello から始まり、条件のすり合わせ・鍵共有・サーバ認証を経て暗号化通信へ進みます。
         </p>
         <TlsHandshakePlayer />
       </section>
@@ -451,3 +468,5 @@ const backLinkStyle: CSSProperties = {
   textDecoration: 'none',
   fontWeight: 700,
 };
+
+

@@ -1,3 +1,4 @@
+﻿import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 
 interface Crumb {
@@ -11,19 +12,52 @@ interface BreadcrumbProps {
 
 export function Breadcrumb({ crumbs }: BreadcrumbProps) {
   return (
-    <nav style={{ fontSize: '0.8rem', color: '#6c757d', marginBottom: '1rem' }}>
+    <nav aria-label="パンくず" style={navStyle}>
       {crumbs.map((crumb, i) => (
-        <span key={i}>
-          {i > 0 && <span style={{ margin: '0 0.4rem' }}>›</span>}
+        <span key={i} style={segmentWrapStyle}>
+          {i > 0 && <span style={separatorStyle}>/</span>}
           {crumb.to ? (
-            <Link to={crumb.to} style={{ color: '#4f8ef7', textDecoration: 'none' }}>
+            <Link to={crumb.to} style={linkStyle}>
               {crumb.label}
             </Link>
           ) : (
-            <span style={{ color: '#495057' }}>{crumb.label}</span>
+            <span aria-current="page" style={currentStyle}>
+              {crumb.label}
+            </span>
           )}
         </span>
       ))}
     </nav>
   );
 }
+
+const navStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: '0.35rem',
+  marginBottom: '0.95rem',
+  color: '#64748b',
+  fontSize: '0.88rem',
+};
+
+const segmentWrapStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '0.35rem',
+};
+
+const separatorStyle: CSSProperties = {
+  color: '#94a3b8',
+};
+
+const linkStyle: CSSProperties = {
+  color: '#2563eb',
+  textDecoration: 'none',
+  fontWeight: 700,
+};
+
+const currentStyle: CSSProperties = {
+  color: '#334155',
+  fontWeight: 700,
+};

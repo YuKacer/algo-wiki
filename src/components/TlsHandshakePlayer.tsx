@@ -18,11 +18,6 @@ interface TlsHandshakeStep {
   detailPath?: string;
 }
 
-interface TlsTerm {
-  term: string;
-  note: string;
-}
-
 const STEPS: TlsHandshakeStep[] = [
   {
     id: 'client-hello',
@@ -58,7 +53,7 @@ const STEPS: TlsHandshakeStep[] = [
     channelState: 'handshake-protected',
     summary: '拡張条件の通知',
     description:
-      'サーバーが選んだ拡張条件を通知します。ここから後続のハンドシェイクメッセージは handshake keys で保護されます。',
+      'サーバーが、この接続で使う拡張条件を通知します。このメッセージ以降のハンドシェイクは handshake keys で保護されます。',
     clientState: '拡張条件を受信',
     serverState: '拡張条件を通知',
     detailPath: '/security/transport-security/tls/encrypted-extensions',
@@ -71,7 +66,7 @@ const STEPS: TlsHandshakeStep[] = [
     channelState: 'handshake-protected',
     summary: 'サーバー認証の材料を送る',
     description:
-      'サーバーが証明書チェーンと CertificateVerify を送り、接続先サーバーが正当な相手であることを示します。クライアントはホスト名、期限、CA 連鎖、署名を確認します。',
+      'サーバーが証明書チェーンと CertificateVerify を送り、接続先サーバーが正当な相手であることを示します。クライアントはホスト名、期限、信頼された CA までたどれるか、署名を確認します。',
     clientState: '証明書を確認',
     serverState: '認証材料を送る',
     detailPath: '/security/transport-security/tls/certificate',
@@ -94,46 +89,16 @@ const STEPS: TlsHandshakeStep[] = [
     title: '6. Client Finished',
     direction: 'client-to-server',
     messageLabel: 'Client Finished',
-    channelState: 'application-ready',
+    channelState: 'handshake-protected',
     summary: 'ハンドシェイク完了',
     description:
-      'クライアントが Finished を返すとハンドシェイク完了です。以後はアプリケーションデータを暗号化してやり取りします。',
+      'クライアントが Finished を返すとハンドシェイク完了です。この直後からアプリケーションデータを暗号化してやり取りします。',
     clientState: 'Finished を返す',
     serverState: 'アプリ通信開始',
     detailPath: '/security/transport-security/tls/client-finished',
   },
 ];
 
-const STEP_TERMS: TlsTerm[] = [
-  {
-    term: 'TLS version',
-    note: 'この接続で使う TLS の版の候補です。',
-  },
-  {
-    term: 'cipher suite',
-    note: 'この接続で使う暗号方式の候補です。',
-  },
-  {
-    term: 'SNI',
-    note: '接続したいホスト名を伝える情報です。',
-  },
-  {
-    term: 'key share',
-    note: '鍵交換のために送る公開値です。',
-  },
-  {
-    term: 'handshake keys',
-    note: 'ServerHello の後に導出され、後続のハンドシェイクメッセージを保護する一時鍵です。',
-  },
-  {
-    term: 'CertificateVerify',
-    note: 'サーバーが証明書に対応する秘密鍵を持っていることを示す署名です。',
-  },
-  {
-    term: 'Finished',
-    note: 'ここまでのハンドシェイク内容に食い違いがないかを確かめるメッセージです。',
-  },
-];
 
 export function TlsHandshakePlayer() {
   return (
@@ -236,23 +201,6 @@ export function TlsHandshakePlayer() {
           );
         }}
       />
-
-      <section style={termsWrapStyle}>
-        <h3 style={termsTitleStyle}>この図で出てくる用語</h3>
-        <p style={termsLeadStyle}>
-          ハンドシェイク全体図で頻出する用語だけを、ここで簡単に整理しています。
-        </p>
-        <div style={termsListStyle}>
-          {STEP_TERMS.map((term) => (
-            <div key={term.term} style={termRowStyle}>
-              <div style={termKeyStyle}>
-                <code>{term.term}</code>
-              </div>
-              <div style={termNoteStyle}>{term.note}</div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <p style={noteStyle}>
         注: ここでは一般的なサーバー認証付き TLS 1.3 を示しています。mTLS の <code>CertificateRequest</code> は省略しています。
@@ -497,8 +445,9 @@ const statusPanelStyle: CSSProperties = {
   borderRadius: '8px',
   background: '#f8f9fa',
   padding: '0.65rem 0.8rem',
-  height: '8.2rem',
-  overflowY: 'auto',
+  minHeight: '10rem',
+  display: 'flex',
+  flexDirection: 'column',
 };
 
 const statusMetaRowStyle: CSSProperties = {
@@ -524,7 +473,8 @@ const statusBodyStyle: CSSProperties = {
 };
 
 const statusFooterStyle: CSSProperties = {
-  marginTop: '0.45rem',
+  marginTop: 'auto',
+  paddingTop: '0.45rem',
   minHeight: '2rem',
   display: 'flex',
   alignItems: 'center',
@@ -545,51 +495,6 @@ const detailPlaceholderStyle: CSSProperties = {
   display: 'inline-block',
   minWidth: '1px',
   minHeight: '2rem',
-};
-
-const termsWrapStyle: CSSProperties = {
-  border: '1px solid #e2e8f0',
-  borderRadius: '10px',
-  background: '#fbfdff',
-  padding: '0.9rem',
-};
-
-const termsTitleStyle: CSSProperties = {
-  margin: 0,
-  marginBottom: '0.3rem',
-  fontSize: '0.98rem',
-  color: '#1f2937',
-};
-
-const termsLeadStyle: CSSProperties = {
-  margin: '0 0 0.65rem',
-  color: '#64748b',
-  fontSize: '0.86rem',
-  lineHeight: 1.55,
-};
-
-const termsListStyle: CSSProperties = {
-  display: 'grid',
-  gap: '0.55rem',
-};
-
-const termRowStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'minmax(130px, 160px) 1fr',
-  gap: '0.65rem',
-  alignItems: 'start',
-};
-
-const termKeyStyle: CSSProperties = {
-  color: '#334155',
-  fontSize: '0.84rem',
-  fontWeight: 800,
-};
-
-const termNoteStyle: CSSProperties = {
-  color: '#475569',
-  fontSize: '0.88rem',
-  lineHeight: 1.5,
 };
 
 const noteStyle: CSSProperties = {

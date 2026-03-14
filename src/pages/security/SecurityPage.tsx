@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+﻿import type { CSSProperties } from 'react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SecuritySystemMap } from '../../components/SecuritySystemMap';
@@ -39,6 +39,7 @@ const DOMAINS: Domain[] = [
     controls: 'MFA、OIDC、RBAC、短命トークン',
     activeNodes: ['client', 'api', 'idp', 'app'],
     activeLinks: ['l2', 'l3', 'l7', 'l13'],
+    to: '/security/auth-security',
   },
   {
     id: 'data',
@@ -84,7 +85,7 @@ export function SecurityPage() {
 
   return (
     <main style={{ maxWidth: '1180px', margin: '0 auto', padding: '2rem 1rem 2.5rem' }}>
-      <h1 style={{ margin: 0, fontSize: '2rem', color: '#18243a' }}>セキュリティ全体像</h1>
+      <h1 style={{ margin: 0, fontSize: '2rem', color: '#18243a' }}>セキュリティ</h1>
       <p style={{ margin: '0.5rem 0 1rem', color: '#5f6b7a' }}>
         システムのどの層を、どの分野で守るかを可視化しています。分野を選ぶと右の構成図が対応箇所を強調します。
       </p>
@@ -210,3 +211,4 @@ const comingSoonStyle: CSSProperties = {
   color: '#6a7482',
   fontSize: '0.9rem',
 };
+

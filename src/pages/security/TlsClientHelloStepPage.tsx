@@ -4,36 +4,41 @@ import { TlsStepBreadcrumbs } from '../../components/TlsStepBreadcrumbs';
 import { TlsStepFooterNav } from '../../components/TlsStepFooterNav';
 
 const SUMMARY = [
-  'ClientHello は、クライアントがこの接続で使いたい TLS 条件を最初にまとめて伝えるメッセージです。',
-  'ここでサーバは、TLS バージョン・暗号スイート・SNI・key_share・supported_groups を見て、どの条件で続行できるかを判断します。',
-  'この時点ではまだ提案段階であり、次に ServerHello を返すか HelloRetryRequest を返すかはサーバ側の判定で決まります。',
+  'ClientHello は、クライアントが今回の通信で使いたい TLS の条件を、最初にまとめてサーバーに伝えるメッセージです。',
+  'ここでは、TLS バージョン、暗号スイート、SNI、key share、supported groups などを送ります。',
+  'サーバーはその内容を見て、次に ServerHello を返すか HelloRetryRequest を返すかを判断します。',
 ];
 
-const DECISION_ROWS = [
+const CONTENT_ROWS = [
   {
     term: 'supported_versions',
-    decide: 'TLS 1.3 で続行できるかを確認します。',
-    result: '共通の TLS バージョンがなければ、ハンドシェイクは続行できません。',
+    sends: '対応できる TLS バージョンを送ります。',
+    image: 'TLS 1.3',
+    conveys: 'サーバーに、TLS 1.3 で続行できるかを伝える材料になります。',
   },
   {
     term: 'cipher_suites',
-    decide: '双方で使える暗号スイートがあるかを確認します。',
-    result: '共通の暗号スイートがあれば、その中から以後の通信で使う方式を選びます。',
+    sends: '使いたい暗号スイートの候補を送ります。',
+    image: 'TLS_AES_128_GCM_SHA256',
+    conveys: 'サーバーが共通に使える暗号方式を選ぶ材料になります。',
   },
   {
     term: 'SNI',
-    decide: 'どのホスト設定で処理するか、どの証明書を使うかの候補を確認します。',
-    result: '同じサーバで複数ホストを扱う場合でも、どの設定で応答するかを選べます。',
+    sends: '接続したいホスト名を送ります。',
+    image: 'example.com',
+    conveys: 'サーバーがどのホスト設定や証明書候補で応答するかを判断する材料になります。',
   },
   {
     term: 'supported_groups',
-    decide: 'クライアントがどの鍵交換グループに対応しているかを確認します。',
-    result: '受け取った key_share が使えない場合でも、再提案を求められる候補があるかを判断できます。',
+    sends: '対応できる鍵交換グループの一覧を送ります。',
+    image: 'x25519, secp256r1',
+    conveys: '受け取った key_share が合わない場合に、再提案できる候補があるかを伝える材料になります。',
   },
   {
     term: 'key_share',
-    decide: 'クライアントが送った key_share でそのまま鍵交換に進めるかを確認します。',
-    result: '使えなければ HelloRetryRequest、使えれば ServerHello に進みます。',
+    sends: '今回使いたい鍵交換用の公開値を送ります。',
+    image: 'x25519 用の公開値',
+    conveys: 'サーバーがそのまま鍵交換に進めるかどうかを判断する材料になります。',
   },
 ];
 
@@ -105,7 +110,7 @@ export function TlsClientHelloStepPage() {
 
       <h1 style={pageTitleStyle}>ClientHello の詳細</h1>
       <p style={leadStyle}>
-        ClientHello は、クライアントが「この条件で TLS を始めたい」と最初に提案するメッセージです。サーバはこの内容を見て、どの設定で応答するか、TLS 1.3 で続行できるか、そして次に ServerHello を返すか HelloRetryRequest を返すかを判断します。
+        ClientHello は、クライアントが「この条件で TLS を始めたい」と最初に提案するメッセージです。
       </p>
 
       <section style={panelStyle}>
@@ -118,36 +123,40 @@ export function TlsClientHelloStepPage() {
       </section>
 
       <section style={panelStyle}>
-        <h2 style={sectionTitleStyle}>サーバがここで決めること</h2>
+        <h2 style={sectionTitleStyle}>ClientHello で送る主な内容</h2>
         <p style={sectionLeadStyle}>
-          サーバは ClientHello の各項目を個別に切り離して見るのではなく、
-          「TLS 1.3 で続行できるか」「どのホスト設定で応答するか」「鍵交換をそのまま始められるか」を整理しながら判断します。
+          ClientHello には、クライアントがこの通信で使いたい条件がまとめて入っています。ここでは、主な項目と、それぞれで何を伝えているかを見ます。
         </p>
         <div style={decisionTableWrapStyle}>
           <table style={decisionTableStyle}>
             <colgroup>
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '30%' }} />
               <col style={{ width: '20%' }} />
-              <col style={{ width: '40%' }} />
-              <col style={{ width: '40%' }} />
+              <col style={{ width: '33%' }} />
             </colgroup>
             <thead>
               <tr>
-                <th scope="col" style={decisionHeaderCellStyle}>見る項目</th>
-                <th scope="col" style={decisionHeaderCellStyle}>サーバがここで決めること</th>
-                <th scope="col" style={decisionHeaderCellStyle}>次に効く結果</th>
+                <th scope="col" style={decisionHeaderCellStyle}>項目</th>
+                <th scope="col" style={decisionHeaderCellStyle}>クライアントが送る内容</th>
+                <th scope="col" style={decisionHeaderCellStyle}>入りうる値のイメージ</th>
+                <th scope="col" style={decisionHeaderCellStyle}>これで何が伝わるか</th>
               </tr>
             </thead>
             <tbody>
-              {DECISION_ROWS.map((row, index) => (
+              {CONTENT_ROWS.map((row, index) => (
                 <tr key={row.term}>
-                  <td style={index === DECISION_ROWS.length - 1 ? decisionTermCellLastStyle : decisionTermCellStyle}>
+                  <td style={index === CONTENT_ROWS.length - 1 ? decisionTermCellLastStyle : decisionTermCellStyle}>
                     <code>{row.term}</code>
                   </td>
-                  <td style={index === DECISION_ROWS.length - 1 ? decisionBodyCellLastStyle : decisionBodyCellStyle}>
-                    {row.decide}
+                  <td style={index === CONTENT_ROWS.length - 1 ? decisionBodyCellLastStyle : decisionBodyCellStyle}>
+                    {row.sends}
                   </td>
-                  <td style={index === DECISION_ROWS.length - 1 ? decisionBodyCellLastStyle : decisionBodyCellStyle}>
-                    {row.result}
+                  <td style={index === CONTENT_ROWS.length - 1 ? decisionImageCellLastStyle : decisionImageCellStyle}>
+                    <code>{row.image}</code>
+                  </td>
+                  <td style={index === CONTENT_ROWS.length - 1 ? decisionBodyCellLastStyle : decisionBodyCellStyle}>
+                    {row.conveys}
                   </td>
                 </tr>
               ))}
@@ -159,16 +168,15 @@ export function TlsClientHelloStepPage() {
       <section style={panelStyle}>
         <h2 style={sectionTitleStyle}>内部の流れ</h2>
         <p style={sectionLeadStyle}>
-          クライアントが条件を組み立てて ClientHello を送り、サーバが候補を読んで次の応答を決めるまでを段階ごとに追います。
+          クライアントが条件を組み立てて ClientHello を送り、サーバーがその内容を受け取るまでを段階ごとに追います。
         </p>
         <TlsClientHelloStepPlayer />
       </section>
 
       <section style={panelStyle}>
-        <h2 style={sectionTitleStyle}>ClientHello 評価結果とサーバの応答</h2>
+        <h2 style={sectionTitleStyle}>ClientHello の後で起きる主な分岐</h2>
         <p style={sectionLeadStyle}>
-          ここでは主要な分岐だけを簡略化して示します。実際には SNI による設定選択なども並行して行われます。
-          「共通条件」は TLS バージョン・暗号スイート・supported_groups をまとめたものです。
+          ClientHello を受けた後、サーバーは共通条件がそろうか、受け取った key_share をそのまま使えるかを見て、次に ServerHello、HelloRetryRequest、Alert のどれに進むかを判断します。
         </p>
         <div style={tableWrapStyle}>
           <table style={tableStyle}>
@@ -330,6 +338,17 @@ const decisionBodyCellStyle: CSSProperties = {
 
 const decisionBodyCellLastStyle: CSSProperties = {
   ...decisionBodyCellStyle,
+  borderBottom: 'none',
+};
+
+const decisionImageCellStyle: CSSProperties = {
+  ...decisionBodyCellStyle,
+  color: '#1f2937',
+  fontWeight: 500,
+};
+
+const decisionImageCellLastStyle: CSSProperties = {
+  ...decisionImageCellStyle,
   borderBottom: 'none',
 };
 

@@ -4,7 +4,8 @@ import { AppShell } from './components/AppShell';
 import { ScrollToTop } from './components/ScrollToTop';
 import { BubbleSortPage } from './pages/BubbleSortPage';
 import { AlgorithmsPage } from './pages/AlgorithmsPage';
-import { SecurityPage } from './pages/security/SecurityPage';
+import { AuthSecurityPage } from './pages/AuthSecurityPage';
+import { SecurityOverviewPage } from './pages/SecurityOverviewPage';
 import { TransportSecurityPage } from './pages/security/TransportSecurityPage';
 import { TransportMethodPage } from './pages/security/TransportMethodPage';
 import { TlsClientHelloStepPage } from './pages/security/TlsClientHelloStepPage';
@@ -62,7 +63,8 @@ export function AppRouter() {
           <Route path="/algorithms" element={<AlgorithmsPage />} />
           <Route path="/algorithms/bubble-sort" element={<BubbleSortPage />} />
 
-          <Route path="/security" element={<SecurityPage />} />
+          <Route path="/security" element={<SecurityOverviewPage />} />
+          <Route path="/security/auth-security" element={<AuthSecurityPage />} />
           <Route path="/security/transport-security" element={<TransportSecurityPage />} />
           <Route path="/security/transport-security/tls/client-hello" element={<TlsClientHelloStepPage />} />
           <Route path="/security/transport-security/tls/server-hello" element={<TlsServerHelloStepPage />} />
